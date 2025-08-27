@@ -1,0 +1,56 @@
+1. Arquitetura Monolítica e Acoplamento
+A aplicação é um monólito clássico, onde todas as funcionalidades (usuários, autenticação, tarefas) rodam no mesmo processo e compartilham a mesma base de código e banco de dados.
+
+Limitação: Manutenção e Evolução em Larga Escala.
+
+Causa: Qualquer alteração, mesmo que pequena, em uma funcionalidade (ex: tasks) exige que toda a aplicação seja testada e reimplantada. Em equipes grandes, isso pode gerar conflitos e tornar o ciclo de desenvolvimento mais lento.
+
+Impacto: Conforme o projeto cresce, a complexidade aumenta e fica mais difícil para novos desenvolvedores entenderem o sistema. O risco de uma alteração em uma parte quebrar outra, aparentemente não relacionada, aumenta.
+
+Limitação: Escalabilidade "Tudo ou Nada".
+
+Causa: Imagine que a rota de GET /api/tasks/stats/summary se torna extremamente popular e consome muita CPU. No modelo atual, você não pode escalar apenas essa funcionalidade. Você precisa escalar a aplicação inteira, subindo novas instâncias de todo o monólito, o que é ineficiente em termos de recursos.
+
+Impacto: Custo maior de infraestrutura e alocação de recursos subótima, já que funcionalidades menos usadas são replicadas desnecessariamente.
+
+2. Camada de Dados: SQLite
+O uso do SQLite é excelente para o escopo atual, mas é uma das principais limitações para o crescimento futuro.
+
+Limitação: Ponto Único de Falha e Resiliência dos Dados.
+
+
+Causa: O banco de dados é um único arquivo (tasks.db) no mesmo servidor da aplicação. Não há replicação, backup automático ou mecanismos de failover (recuperação de falhas) robustos, como em sistemas como PostgreSQL ou MySQL.
+
+Impacto: Se o disco do servidor falhar ou o arquivo for corrompido, todos os dados podem ser perdidos. A aplicação inteira para se o banco de dados ficar indisponível.
+
+Limitação: Concorrência de Escrita.
+
+Causa: Como discutido anteriormente, o SQLite bloqueia o banco de dados em operações de escrita. Em um cenário com centenas de usuários criando e atualizando tarefas simultaneamente, isso se tornaria um gargalo de performance.
+
+Impacto: Aumento da latência para operações de escrita (POST, PUT) e possíveis erros de "database is locked" sob alta carga.
+
+3. Gerenciamento de Configuração e Segredos
+As configurações, incluindo o segredo do JWT, são carregadas de um arquivo local (
+
+config/database.js) com um fallback para um valor padrão.
+
+
+Limitação: Gerenciamento de Segredos.
+
+Causa: O segredo do JWT ('seu-secret-aqui') está diretamente no código como fallback. Embora a intenção seja usar variáveis de ambiente (process.env.JWT_SECRET), é uma prática de risco ter segredos "hardcoded" no repositório.
+
+Impacto: Se o código vazar, o segredo é exposto, comprometendo toda a autenticação. Em ambientes de produção, segredos devem ser gerenciados por serviços externos (como AWS Secrets Manager, HashiCorp Vault) e injetados na aplicação em tempo de execução, sem nunca estarem no código-fonte.
+
+4. Tratamento de "Tags" (Modelo de Dados)
+O modelo de 
+
+tags como uma string separada por vírgulas é uma solução pragmática e inteligente para o escopo atual.
+
+
+
+Limitação: Consultas Complexas e Integridade de Dados.
+
+
+Causa: O uso de LIKE para buscar tags funciona, mas é ineficiente em grandes volumes de dados (não pode usar índices de forma eficaz). Além disso, não há como garantir a integridade (ex: prevenir tags duplicadas com pequenas variações como "api" e "API") ou realizar análises avançadas (ex: "quais são as 10 tags mais usadas em toda a plataforma?").
+
+Impacto: Performance degradada em buscas por tags e dificuldade em extrair métricas e insights sobre o uso de tags. A solução "ideal" (e mais complexa) para isso seria normalizar o banco de dados com tabelas separadas para tags e uma tabela de junção task_tags.

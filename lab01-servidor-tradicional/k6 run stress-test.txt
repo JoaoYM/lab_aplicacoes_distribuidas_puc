@@ -1,0 +1,73 @@
+# Ao realizar um teste local simples obtive os seguintes resultados:
+
+node simple-stress-test.js
+
+Iniciando teste de estresse com 200 requisições concorrentes...
+
+--- RESULTADOS ---
+Teste finalizado em 0.69 segundos.
+Requisições bem-sucedidas: 200
+Requisições com falha: 0
+Taxa de requisições por segundo (RPS): 287.77
+
+# Ao realizar o teste com o K6 pude observar 2 cenários distintos:
+  - A aplicação comporta bem operações simples como a leitura dos dados disponíveis na base de dados, sem perdas.
+  - O rate limite teve que ser ajustado, pois o comportamento esperado de restrição das requisições ocorre como esperado gerando o bloqueio
+das requisições extrapolado o limite predefinido por usuário.
+
+
+k6 run stress-test.js
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+     execution: local
+        script: stress-test.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 1000 max VUs, 2m15s max duration (incl. graceful stop):
+              * default: Up to 1000 looping VUs for 1m45s over 3 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+
+
+
+  █ THRESHOLDS
+
+    http_req_duration
+    ✓ 'p(95)<800' p(95)=384.44ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS
+
+    checks_total.......: 70086   662.227001/s
+    checks_succeeded...: 100.00% 70086 out of 70086
+    checks_failed......: 0.00%   0 out of 70086
+
+    ✓ status was 200
+
+    HTTP
+    http_req_duration..............: avg=184.4ms min=0s med=179.85ms max=694.74ms p(90)=316.46ms p(95)=384.44ms
+      { expected_response:true }...: avg=184.4ms min=0s med=179.85ms max=694.74ms p(90)=316.46ms p(95)=384.44ms
+    http_req_failed................: 0.00%  0 out of 70086
+    http_reqs......................: 70086  662.227001/s
+
+    EXECUTION
+    iteration_duration.............: avg=1.18s   min=1s med=1.18s    max=1.69s    p(90)=1.31s    p(95)=1.38s
+    iterations.....................: 70086  662.227001/s
+    vus............................: 41     min=31         max=1000
+    vus_max........................: 1000   min=1000       max=1000
+
+    NETWORK
+    data_received..................: 131 MB 1.2 MB/s
+    data_sent......................: 25 MB  240 kB/s
+
+
+
+                                                                                                                                               
+running (1m45.8s), 0000/1000 VUs, 70086 complete and 0 interrupted iterations                                                                  
+default ✓ [======================================] 0000/1000 VUs  1m45s 

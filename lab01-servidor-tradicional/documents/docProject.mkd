@@ -1,0 +1,189 @@
+# Lab API - Servidor de Aplicação Tradicional
+
+Este projeto implementa uma API RESTful para um sistema de gerenciamento de tarefas (To-Do List), construído com uma arquitetura de servidor tradicional (monolítica) utilizando Node.js, Express e SQLite.
+
+O objetivo é demonstrar os fundamentos de sistemas cliente-servidor, operações CRUD, autenticação, e fornecer uma base sólida para comparação com outras arquiteturas de sistemas distribuídos.
+
+## ✨ Features
+
+* **Autenticação JWT:** Sistema completo de registro e login com tokens JSON Web Tokens para segurança dos endpoints.
+* **Gerenciamento de Tarefas:** Operações CRUD (Criar, Ler, Atualizar, Deletar) completas para as tarefas de cada usuário.
+* **Filtros Avançados e Paginação:** A listagem de tarefas suporta múltiplos filtros combinados (status, prioridade, categoria, tags, data), ordenação e paginação.
+* [cite_start]**Cache em Memória:** Cache para consultas frequentes (`GET`) para melhorar a performance e reduzir a carga no banco de dados[cite: 29].
+* **Segurança:** Implementação de boas práticas de segurança, incluindo:
+    * [cite_start]**Helmet:** para proteção contra vulnerabilidades web comuns[cite: 118].
+    * [cite_start]**Rate Limiting:** Limites de requisição por IP para rotas de autenticação e por usuário para as rotas da API, prevenindo ataques de força bruta e DoS[cite: 118, 145].
+    * [cite_start]**Validação de Dados:** Validação de payloads de entrada com Joi para garantir a integridade dos dados[cite: 135].
+* [cite_start]**Logging Estruturado:** Logs detalhados com Winston para monitoramento e depuração facilitada[cite: 119].
+* **Documentação Interativa:** Endpoint com Swagger/OpenAPI para visualização e teste da API.
+
+## 🛠️ Tecnologias Utilizadas
+
+### Backend
+* **Node.js**: Ambiente de execução JavaScript.
+* [cite_start]**Express**: Framework para construção da API REST[cite: 117].
+* [cite_start]**SQLite3**: Banco de dados relacional file-based[cite: 1].
+* [cite_start]**JSON Web Token (jsonwebtoken)**: Para geração e verificação de tokens de autenticação[cite: 1].
+* [cite_start]**bcryptjs**: Para hashing de senhas[cite: 1].
+* [cite_start]**Joi**: Para validação de schemas e payloads[cite: 1].
+* [cite_start]**Winston**: Para logging estruturado[cite: 1].
+* [cite_start]**Node-cache**: Para implementação de cache em memória[cite: 1].
+* [cite_start]**Helmet**: Middleware de segurança para headers HTTP[cite: 2].
+* [cite_start]**express-rate-limit**: Middleware para limitar requisições[cite: 1].
+* **cors, body-parser, uuid**: Utilitários para a API.
+
+### Desenvolvimento
+* [cite_start]**Nodemon**: Para reiniciar o servidor automaticamente durante o desenvolvimento[cite: 1].
+* [cite_start]**Jest & Supertest**: Para testes automatizados[cite: 1].
+* **k6**: Para testes de carga e estresse.
+
+## 🚀 Como Executar
+
+### Pré-requisitos
+* Node.js v18+
+* npm
+
+### 1. Clonar o Repositório
+```bash
+git clone <Não se aplica, input de arquivo submetido>
+cd lab01-servidor-tradicional
+```
+
+### 2. Instalar as Dependências
+```bash
+npm install
+```
+
+### 3. Iniciar o Servidor
+* **Modo de Desenvolvimento (com auto-reload):**
+  ```bash
+  npm run dev
+  ```
+* **Modo de Produção:**
+  ```bash
+  npm start
+  ```
+
+O servidor estará rodando em `http://localhost:3000`.
+
+## Endpoints da API
+
+A URL base para todos os endpoints é `http://localhost:3000`.
+
+---
+
+### Autenticação (`/api/auth`)
+
+#### 1. Registrar um Novo Usuário
+* **`POST /api/auth/register`**
+* **Descrição:** Cria uma nova conta de usuário.
+* **Request Body:**
+  ```json
+  {
+      "email": "user@example.com",
+      "username": "newuser",
+      "password": "password123",
+      "firstName": "João",
+      "lastName": "Silva"
+  }
+  ```
+* **Respostas:**
+    * **`201 Created`**: Sucesso. [cite_start]Retorna o objeto do usuário (sem a senha) e um token JWT[cite: 89, 137].
+    * [cite_start]**`409 Conflict`**: Se o email ou username já estiver em uso[cite: 87, 138].
+
+#### 2. Realizar Login
+* **`POST /api/auth/login`**
+* **Descrição:** Autentica um usuário e retorna um token JWT válido por 24 horas.
+* **Request Body:**
+  ```json
+  {
+      "identifier": "user@example.com", // Pode ser o email ou o username
+      "password": "password123"
+  }
+  ```
+* **Respostas:**
+    * **`200 OK`**: Sucesso. [cite_start]Retorna o objeto do usuário (sem a senha) e um token JWT[cite: 94, 140].
+    * [cite_start]**`401 Unauthorized`**: Credenciais inválidas[cite: 93, 141].
+
+---
+
+### Tarefas (`/api/tasks`)
+
+Todos os endpoints de tarefas são protegidos e requerem um token JWT no header `Authorization`.
+
+* **Header de Autenticação:** `Authorization: Bearer <SEU_TOKEN_JWT>`
+
+#### 1. Listar Tarefas
+* **`GET /api/tasks`**
+* **Descrição:** Retorna uma lista paginada de tarefas do usuário autenticado, com suporte a filtros e ordenação.
+* **Query Parameters (Opcionais):**
+    * `completed` (boolean): `true` ou `false`
+    * `priority` (string): `low`, `medium`, `high`, `urgent`
+    * `category` (string)
+    * `tags` (string): Tags separadas por vírgula (ex: `docs,api`)
+    * `startDate` (string): Data de início (formato `YYYY-MM-DD`)
+    * `endDate` (string): Data de fim (formato `YYYY-MM-DD`)
+    * `page` (integer): Padrão `1`
+    * `limit` (integer): Padrão `10`
+    * `sortBy` (string): Campo para ordenação (padrão `createdAt`)
+    * `sortOrder` (string): `ASC` ou `DESC` (padrão `DESC`)
+* **Respostas:**
+    * **`200 OK`**: Sucesso. Retorna um objeto com dados de paginação e a lista de tarefas.
+    * **`401 Unauthorized`**: Token inválido ou ausente.
+
+#### 2. Criar Tarefa
+* **`POST /api/tasks`**
+* **Descrição:** Cria uma nova tarefa.
+* **Request Body:**
+  ```json
+  {
+      "title": "Documentar a API",
+      "description": "Criar um arquivo README.md com todos os endpoints.",
+      "priority": "high",
+      "category": "Desenvolvimento",
+      "tags": ["docs", "markdown"]
+  }
+  ```
+* **Respostas:**
+    * **`201 Created`**: Sucesso. Retorna o objeto da tarefa recém-criada.
+    * **`400 Bad Request`**: Dados inválidos.
+    * **`401 Unauthorized`**: Token inválido ou ausente.
+
+#### 3. Buscar Tarefa por ID
+* **`GET /api/tasks/{id}`**
+* **Descrição:** Retorna uma tarefa específica pelo seu ID.
+* **Respostas:**
+    * **`200 OK`**: Sucesso. [cite_start]Retorna o objeto da tarefa[cite: 151].
+    * **`401 Unauthorized`**: Token inválido ou ausente.
+    * [cite_start]**`404 Not Found`**: Tarefa não encontrada ou não pertence ao usuário[cite: 150].
+
+#### 4. Atualizar Tarefa
+* **`PUT /api/tasks/{id}`**
+* **Descrição:** Atualiza uma ou mais propriedades de uma tarefa existente.
+* **Request Body:** (Envie apenas os campos que deseja alterar)
+  ```json
+  {
+      "completed": true,
+      "priority": "low"
+  }
+  ```
+* **Respostas:**
+    * **`200 OK`**: Sucesso. [cite_start]Retorna o objeto da tarefa atualizada[cite: 194].
+    * [cite_start]**`400 Bad Request`**: Nenhum campo para atualizar foi fornecido[cite: 188].
+    * **`401 Unauthorized`**: Token inválido ou ausente.
+    * [cite_start]**`404 Not Found`**: Tarefa não encontrada ou não pertence ao usuário[cite: 191].
+
+#### 5. Deletar Tarefa
+* **`DELETE /api/tasks/{id}`**
+* **Descrição:** Remove uma tarefa.
+* **Respostas:**
+    * **`200 OK`**: Sucesso. [cite_start]Retorna uma mensagem de confirmação[cite: 198].
+    * **`401 Unauthorized`**: Token inválido ou ausente.
+    * [cite_start]**`404 Not Found`**: Tarefa não encontrada ou não pertence ao usuário[cite: 197].
+
+#### 6. Obter Estatísticas
+* **`GET /api/tasks/stats/summary`**
+* **Descrição:** Retorna um resumo com o total de tarefas, quantas estão completas e pendentes.
+* **Respostas:**
+    * **`200 OK`**: Sucesso. [cite_start]Retorna o objeto com as estatísticas[cite: 147, 148].
+    * **`401 Unauthorized`**: Token inválido ou ausente.
