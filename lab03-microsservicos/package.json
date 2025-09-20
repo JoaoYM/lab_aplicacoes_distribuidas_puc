@@ -1,0 +1,35 @@
+{
+  "name": "lista-compras-microservices",
+  "version": "1.0.0",
+  "description": "Sistema de lista de compras com microsserviços",
+  "main": "api-gateway/server.js",
+  "scripts": {
+    "start:gateway": "node api-gateway/server.js",
+    "start:user": "node services/user-service/server.js",
+    "start:item": "node services/item-service/server.js",
+    "start:list": "node services/list-service/server.js",
+    "start:all": "concurrently \"npm run start:user\" \"npm run start:item\" \"npm run start:list\" \"npm run start:gateway\"",
+    "start:demo": "node client-demo.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "morgan": "^1.10.0",
+    "uuid": "^9.0.0",
+    "axios": "^1.4.0",
+    "http-proxy-middleware": "^2.0.6",
+    "concurrently": "^8.2.0"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "microservices",
+    "shopping",
+    "list",
+    "api",
+    "nosql"
+  ],
+  "author": "Seu Nome",
+  "license": "MIT"
+}
