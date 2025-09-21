@@ -593,6 +593,15 @@ class ListService {
         }, 30000);
     }
 
+    registerWithRegistry() {
+        serviceRegistry.register(this.serviceName, {
+            url: this.serviceUrl,
+            version: '1.0.0',
+            database: 'JSON-NoSQL',
+            endpoints: ['/health', '/lists']
+        });
+    }
+    
     start() {
         this.app.listen(this.port, () => {
             console.log('=====================================');
