@@ -1,0 +1,6 @@
+{
+  "watch": ["api-gateway/", "services/"],
+  "ignore": ["**/*.json", "node_modules/"],
+  "ext": "js,json",
+  "delay": 1000
+}

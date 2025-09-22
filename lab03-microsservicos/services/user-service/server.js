@@ -17,7 +17,7 @@ class UserService {
         this.port = process.env.PORT || 3001;
         this.serviceName = 'user-service';
         this.serviceUrl = `http://localhost:${this.port}`;
-        
+
         this.setupDatabase();
         this.setupMiddleware();
         this.setupRoutes();
@@ -36,10 +36,10 @@ class UserService {
         setTimeout(async () => {
             try {
                 const existingUsers = await this.usersDb.find();
-                
+
                 if (existingUsers.length === 0) {
                     const adminPassword = await bcrypt.hash('admin123', 12);
-                    
+
                     await this.usersDb.create({
                         id: uuidv4(),
                         email: 'admin@microservices.com',
@@ -109,7 +109,7 @@ class UserService {
                 database: 'JSON-NoSQL',
                 endpoints: [
                     'POST /auth/register',
-                    'POST /auth/login', 
+                    'POST /auth/login',
                     'POST /auth/validate',
                     'GET /users',
                     'GET /users/:id',
@@ -128,7 +128,7 @@ class UserService {
         this.app.get('/users', this.authMiddleware.bind(this), this.getUsers.bind(this));
         this.app.get('/users/:id', this.authMiddleware.bind(this), this.getUser.bind(this));
         this.app.put('/users/:id', this.authMiddleware.bind(this), this.updateUser.bind(this));
-        
+
         // Search route
         this.app.get('/search', this.authMiddleware.bind(this), this.searchUsers.bind(this));
     }
@@ -155,7 +155,7 @@ class UserService {
     // Auth middleware
     authMiddleware(req, res, next) {
         const authHeader = req.header('Authorization');
-        
+
         if (!authHeader?.startsWith('Bearer ')) {
             return res.status(401).json({
                 success: false,
@@ -164,7 +164,7 @@ class UserService {
         }
 
         const token = authHeader.replace('Bearer ', '');
-        
+
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'user-secret');
             req.user = decoded;
@@ -243,11 +243,11 @@ class UserService {
             const { password: _, ...userWithoutPassword } = newUser;
 
             const token = jwt.sign(
-                { 
-                    id: newUser.id, 
-                    email: newUser.email, 
+                {
+                    id: newUser.id,
+                    email: newUser.email,
                     username: newUser.username,
-                    role: newUser.role 
+                    role: newUser.role
                 },
                 process.env.JWT_SECRET || 'user-secret',
                 { expiresIn: '24h' }
@@ -286,10 +286,24 @@ class UserService {
                 ]
             });
 
+            // console.log(JSON.stringify());
+
+            // DEBUG: Log do usuário encontrado e sua senha hash
+            if (user) {
+                console.log('DEBUG - User found:');
+                console.log('User ID:', user.id);
+                console.log('User email:', user.email);
+                console.log('User username:', user.username);
+                console.log('Stored password hash:', user.password);
+            } else {
+                console.log('DEBUG - No user found with identifier:', identifier);
+            }
+
             if (!user || !await bcrypt.compare(password, user.password)) {
                 return res.status(401).json({
                     success: false,
                     message: 'Credenciais inválidas'
+
                 });
             }
 
@@ -308,13 +322,13 @@ class UserService {
             });
 
             const { password: _, ...userWithoutPassword } = user;
-            
+
             const token = jwt.sign(
-                { 
-                    id: user.id, 
-                    email: user.email, 
+                {
+                    id: user.id,
+                    email: user.email,
                     username: user.username,
-                    role: user.role 
+                    role: user.role
                 },
                 process.env.JWT_SECRET || 'user-secret',
                 { expiresIn: '24h' }
@@ -475,7 +489,7 @@ class UserService {
             }
 
             const user = await this.usersDb.findById(id);
-            
+
             if (!user) {
                 return res.status(404).json({
                     success: false,
@@ -488,7 +502,7 @@ class UserService {
             if (firstName) updates.firstName = firstName;
             if (lastName) updates.lastName = lastName;
             if (email) updates.email = email.toLowerCase();
-            
+
             // Atualizar campos aninhados (demonstrando NoSQL)
             if (bio !== undefined) updates['profile.bio'] = bio;
             if (theme) updates['profile.preferences.theme'] = theme;
@@ -525,7 +539,7 @@ class UserService {
 
             // Busca full-text NoSQL
             const users = await this.usersDb.search(q, ['firstName', 'lastName', 'username', 'email']);
-            
+
             // Filtrar apenas usuários ativos e remover passwords
             const safeUsers = users
                 .filter(user => user.status === 'active')
@@ -577,7 +591,7 @@ class UserService {
             console.log(`Health: ${this.serviceUrl}/health`);
             console.log(`Database: JSON-NoSQL`);
             console.log('=====================================');
-            
+
             // Register with service registry
             this.registerWithRegistry();
             this.startHealthReporting();

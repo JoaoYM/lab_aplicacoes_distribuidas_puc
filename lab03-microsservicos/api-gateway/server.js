@@ -26,8 +26,18 @@ class APIGateway {
     }
 
     setupMiddleware() {
+        this.app.use((req, res, next) => {
+            console.log('🎯 REQUISIÇÃO CHEGOU NO GATEWAY:', req.method, req.originalUrl);
+            next();
+        });
+
         this.app.use(helmet());
-        this.app.use(cors());
+        // this.app.use(cors());
+        this.app.use(cors({
+            origin: '*',
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'Authorization']
+        }));
         this.app.use(morgan('combined'));
         this.app.use(express.json());
         this.app.use(express.urlencoded({ extended: true }));
@@ -192,6 +202,8 @@ class APIGateway {
             // Construir URL de destino corrigida
             const originalPath = req.originalUrl;
             let targetPath = '';
+
+            console.log("JoaoP")
 
             // Extrair o path correto baseado no serviço
             if (serviceName === 'user-service') {

@@ -10,22 +10,29 @@
     "start:list": "node services/list-service/server.js",
     "start:all": "concurrently \"npm run start:user\" \"npm run start:item\" \"npm run start:list\" \"npm run start:gateway\"",
     "start:demo": "node client-demo.js",
+    "debug:gateway": "nodemon api-gateway/server.js",
+    "debug:user": "nodemon services/user-service/server.js",
+    "debug:item": "nodemon services/item-service/server.js",
+    "debug:list": "nodemon services/list-service/server.js",
+    "debug:all": "concurrently \"npm run debug:user\" \"npm run debug:item\" \"npm run debug:list\" \"npm run debug:gateway\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.0.0",
-    "morgan": "^1.10.0",
-    "uuid": "^9.0.0",
     "axios": "^1.4.0",
-    "http-proxy-middleware": "^2.0.6",
     "bcryptjs": "^2.4.3",
     "concurrently": "^8.2.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
     "fs-extra": "^11.1.0",
-    "jsonwebtoken": "^9.0.0"
+    "helmet": "^7.0.0",
+    "http-proxy-middleware": "^2.0.6",
+    "jsonwebtoken": "^9.0.0",
+    "morgan": "^1.10.0",
+    "uuid": "^9.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
   "keywords": [
     "microservices",
     "shopping",
