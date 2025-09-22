@@ -279,25 +279,50 @@ class UserService {
                 });
             }
 
-            const user = await this.usersDb.findOne({
+            console.log('=== 🎯 DEBUG CONSULTA BANCO ===');
+            console.log('Identifier recebido:', identifier);
+
+            // Criar a query explicitamente
+            const query = {
                 $or: [
                     { email: identifier.toLowerCase() },
                     { username: identifier.toLowerCase() }
                 ]
+            };
+
+            console.log('Query sendo executada:', JSON.stringify(query, null, 2));
+
+            // DEBUG: Ver todos os usuários primeiro
+            const allUsers = await this.usersDb.find();
+            console.log('Todos os usuários no banco:');
+            allUsers.forEach(user => {
+                console.log(`- Email: "${user.email}", Username: "${user.username}"`);
             });
 
-            // console.log(JSON.stringify());
+            const user = await this.usersDb.findOne(query);
+
+            console.log('Resultado da consulta:', user ? 'USUÁRIO ENCONTRADO' : 'NENHUM USUÁRIO');
+
+            // Teste
+            // const user = await this.usersDb.findOne({
+            //     $or: [
+            //         { email: identifier.toLowerCase() },
+            //         { username: identifier.toLowerCase() }
+            //     ]
+            // });
+
+            // console.log(JSON.stringify({teste: user}));
 
             // DEBUG: Log do usuário encontrado e sua senha hash
-            if (user) {
-                console.log('DEBUG - User found:');
-                console.log('User ID:', user.id);
-                console.log('User email:', user.email);
-                console.log('User username:', user.username);
-                console.log('Stored password hash:', user.password);
-            } else {
-                console.log('DEBUG - No user found with identifier:', identifier);
-            }
+            // if (user) {
+            //     console.log('DEBUG - User found:');
+            //     console.log('User ID:', user.id);
+            //     console.log('User email:', user.email);
+            //     console.log('User username:', user.username);
+            //     console.log('Stored password hash:', user.password);
+            // } else {
+            //     console.log('DEBUG - No user found with identifier:', identifier);
+            // }
 
             if (!user || !await bcrypt.compare(password, user.password)) {
                 return res.status(401).json({

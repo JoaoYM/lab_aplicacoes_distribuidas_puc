@@ -229,7 +229,55 @@ class JsonDatabase {
         }
     }
 
+    // matchesFilter(document, filter) {
+    //     return Object.entries(filter).every(([key, value]) => {
+    //         const docValue = this.getNestedValue(document, key);
+
+    //         if (typeof value === 'object' && value !== null) {
+    //             // Operadores especiais
+    //             if (value.$regex) {
+    //                 const regex = new RegExp(value.$regex, value.$options || 'i');
+    //                 return regex.test(docValue);
+    //             }
+    //             if (value.$in) {
+    //                 return value.$in.includes(docValue);
+    //             }
+    //             if (value.$gt) {
+    //                 return docValue > value.$gt;
+    //             }
+    //             if (value.$lt) {
+    //                 return docValue < value.$lt;
+    //             }
+    //             if (value.$gte) {
+    //                 return docValue >= value.$gte;
+    //             }
+    //             if (value.$lte) {
+    //                 return docValue <= value.$lte;
+    //             }
+    //         }
+
+    //         return docValue === value;
+    //     });
+    // }
+
     matchesFilter(document, filter) {
+        console.log('=== DEBUG MATCHES FILTER ===');
+        console.log('Document:', document.email, document.username);
+        console.log('Filter:', JSON.stringify(filter));
+
+        // Suporte a $or
+        if (filter.$or && Array.isArray(filter.$or)) {
+            console.log('Processando $or operator');
+            const result = filter.$or.some(subFilter => this.matchesFilter(document, subFilter));
+            console.log('Resultado $or:', result);
+            return result;
+        }
+
+        // Suporte a $and
+        if (filter.$and && Array.isArray(filter.$and)) {
+            return filter.$and.every(subFilter => this.matchesFilter(document, subFilter));
+        }
+
         return Object.entries(filter).every(([key, value]) => {
             const docValue = this.getNestedValue(document, key);
 

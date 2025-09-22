@@ -211,38 +211,6 @@ class APIGateway {
                 });
             }
 
-            // Construir URL de destino corrigida
-            // const originalPath = req.originalUrl;
-            // let targetPath = '';
-
-            // console.log("JoaoP")
-
-            // // Extrair o path correto baseado no serviço
-            // if (serviceName === 'user-service') {
-            //     // /api/users/auth/login -> /auth/login
-            //     // /api/users -> /users
-            //     // /api/users/123 -> /users/123
-            //     targetPath = originalPath.replace('/api/users', '');
-            //     if (!targetPath.startsWith('/')) {
-            //         targetPath = '/' + targetPath;
-            //     }
-            //     // Se path vazio, usar /users
-            //     if (targetPath === '/' || targetPath === '') {
-            //         targetPath = '/users';
-            //     }
-            // } else if (serviceName === 'product-service') {
-            //     // /api/products -> /products
-            //     // /api/products/123 -> /products/123
-            //     targetPath = originalPath.replace('/api/products', '');
-            //     if (!targetPath.startsWith('/')) {
-            //         targetPath = '/' + targetPath;
-            //     }
-            //     // Se path vazio, usar /products
-            //     if (targetPath === '/' || targetPath === '') {
-            //         targetPath = '/products';
-            //     }
-            // }
-
             const originalPath = req.originalUrl;
             let targetPath = '';
 
