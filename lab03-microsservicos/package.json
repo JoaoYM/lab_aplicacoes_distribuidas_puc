@@ -9,12 +9,20 @@
     "start:item": "node services/item-service/server.js",
     "start:list": "node services/list-service/server.js",
     "start:all": "concurrently \"npm run start:user\" \"npm run start:item\" \"npm run start:list\" \"npm run start:gateway\"",
-    "start:demo": "node client-demo.js",
-    "debug:gateway": "nodemon api-gateway/server.js",
-    "debug:user": "nodemon services/user-service/server.js",
-    "debug:item": "nodemon services/item-service/server.js",
-    "debug:list": "nodemon services/list-service/server.js",
+    
+    "debug:gateway": "nodemon --inspect api-gateway/server.js",
+    "debug:user": "nodemon --inspect services/user-service/server.js",
+    "debug:item": "nodemon --inspect services/item-service/server.js",
+    "debug:list": "nodemon --inspect services/list-service/server.js",
     "debug:all": "concurrently \"npm run debug:user\" \"npm run debug:item\" \"npm run debug:list\" \"npm run debug:gateway\"",
+    
+    "debug:ports:user": "nodemon --inspect=9229 services/user-service/server.js",
+    "debug:ports:item": "nodemon --inspect=9230 services/item-service/server.js",
+    "debug:ports:list": "nodemon --inspect=9231 services/list-service/server.js",
+    "debug:ports:gateway": "nodemon --inspect=9232 api-gateway/server.js",
+    "debug:ports:all": "concurrently \"npm run debug:ports:user\" \"npm run debug:ports:item\" \"npm run debug:ports:list\" \"npm run debug:ports:gateway\"",
+    
+    "start:demo": "node client-demo.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

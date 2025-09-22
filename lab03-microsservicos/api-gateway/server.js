@@ -58,6 +58,18 @@ class APIGateway {
     }
 
     setupRoutes() {
+        // Auth routes - CORREÇÃO
+        this.app.use('/api/auth', (req, res, next) => {
+            console.log(`🔗 Roteando auth para user-service: ${req.method} ${req.originalUrl}`);
+            this.proxyRequest('user-service', req, res, next);
+        });
+
+        // Mantenha as rotas existentes:
+        this.app.use('/api/users', (req, res, next) => {
+            console.log(`🔗 Roteando para user-service: ${req.method} ${req.originalUrl}`);
+            this.proxyRequest('user-service', req, res, next);
+        });
+
         // Gateway health check
         this.app.get('/health', (req, res) => {
             const services = serviceRegistry.listServices();
@@ -200,34 +212,55 @@ class APIGateway {
             }
 
             // Construir URL de destino corrigida
+            // const originalPath = req.originalUrl;
+            // let targetPath = '';
+
+            // console.log("JoaoP")
+
+            // // Extrair o path correto baseado no serviço
+            // if (serviceName === 'user-service') {
+            //     // /api/users/auth/login -> /auth/login
+            //     // /api/users -> /users
+            //     // /api/users/123 -> /users/123
+            //     targetPath = originalPath.replace('/api/users', '');
+            //     if (!targetPath.startsWith('/')) {
+            //         targetPath = '/' + targetPath;
+            //     }
+            //     // Se path vazio, usar /users
+            //     if (targetPath === '/' || targetPath === '') {
+            //         targetPath = '/users';
+            //     }
+            // } else if (serviceName === 'product-service') {
+            //     // /api/products -> /products
+            //     // /api/products/123 -> /products/123
+            //     targetPath = originalPath.replace('/api/products', '');
+            //     if (!targetPath.startsWith('/')) {
+            //         targetPath = '/' + targetPath;
+            //     }
+            //     // Se path vazio, usar /products
+            //     if (targetPath === '/' || targetPath === '') {
+            //         targetPath = '/products';
+            //     }
+            // }
+
             const originalPath = req.originalUrl;
             let targetPath = '';
 
-            console.log("JoaoP")
+            console.log("DEBUG - Original Path:", originalPath);
 
-            // Extrair o path correto baseado no serviço
+            // Extrair o path correto baseado no serviço E na rota
             if (serviceName === 'user-service') {
-                // /api/users/auth/login -> /auth/login
-                // /api/users -> /users
-                // /api/users/123 -> /users/123
-                targetPath = originalPath.replace('/api/users', '');
-                if (!targetPath.startsWith('/')) {
-                    targetPath = '/' + targetPath;
-                }
-                // Se path vazio, usar /users
-                if (targetPath === '/' || targetPath === '') {
-                    targetPath = '/users';
-                }
-            } else if (serviceName === 'product-service') {
-                // /api/products -> /products
-                // /api/products/123 -> /products/123
-                targetPath = originalPath.replace('/api/products', '');
-                if (!targetPath.startsWith('/')) {
-                    targetPath = '/' + targetPath;
-                }
-                // Se path vazio, usar /products
-                if (targetPath === '/' || targetPath === '') {
-                    targetPath = '/products';
+                if (originalPath.startsWith('/api/auth')) {
+                    // /api/auth/login -> /auth/login
+                    // /api/auth/register -> /auth/register
+                    targetPath = originalPath.replace('/api/auth', '/auth');
+                } else if (originalPath.startsWith('/api/users')) {
+                    // /api/users -> /users
+                    // /api/users/123 -> /users/123
+                    targetPath = originalPath.replace('/api/users', '/users');
+                    if (targetPath === '/' || targetPath === '') {
+                        targetPath = '/users';
+                    }
                 }
             }
 

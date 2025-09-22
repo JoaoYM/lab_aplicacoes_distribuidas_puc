@@ -1,0 +1,45 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug User Service",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "nodemon",
+      "program": "${workspaceFolder}/services/user-service/server.js",
+      "restart": true,
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Debug Item Service",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "nodemon",
+      "program": "${workspaceFolder}/services/item-service/server.js",
+      "restart": true,
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Debug List Service",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "nodemon",
+      "program": "${workspaceFolder}/services/list-service/server.js",
+      "restart": true,
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Debug API Gateway",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "nodemon",
+      "program": "${workspaceFolder}/api-gateway/server.js",
+      "restart": true,
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
+}
