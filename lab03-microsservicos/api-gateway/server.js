@@ -3,8 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const axios = require('axios');
-const ItemService = require('../services/item-service/server');
-const ListService = require('../services/list-service/server');
+const RouteMapper = require('../routes/routingMapper'); // Ajuste o path conforme necessário
 
 // Importar service registry
 const serviceRegistry = require('../shared/serviceRegistry');
@@ -13,6 +12,7 @@ class APIGateway {
     constructor() {
         this.app = express();
         this.port = process.env.PORT || 3000;
+        this.routeMapper = new RouteMapper(); // Instância única do RouteMapper
 
         // Circuit breaker simples
         this.circuitBreakers = new Map();
@@ -22,7 +22,7 @@ class APIGateway {
         this.setupErrorHandling();
         setTimeout(() => {
             this.startHealthChecks();
-        }, 3000); // Aguardar 3 segundos antes de iniciar health checks
+        }, 3000);
     }
 
     setupMiddleware() {
@@ -32,7 +32,6 @@ class APIGateway {
         });
 
         this.app.use(helmet());
-        // this.app.use(cors());
         this.app.use(cors({
             origin: '*',
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -58,16 +57,9 @@ class APIGateway {
     }
 
     setupRoutes() {
-        // Auth routes - CORREÇÃO
-        this.app.use('/api/auth', (req, res, next) => {
-            console.log(`🔗 Roteando auth para user-service: ${req.method} ${req.originalUrl}`);
-            this.proxyRequest('user-service', req, res, next);
-        });
-
-        // Mantenha as rotas existentes:
-        this.app.use('/api/users', (req, res, next) => {
-            console.log(`🔗 Roteando para user-service: ${req.method} ${req.originalUrl}`);
-            this.proxyRequest('user-service', req, res, next);
+        // Rota única para todos os serviços usando RouteMapper
+        this.app.use('/api', (req, res, next) => {
+            this.proxyRequest(req, res, next);
         });
 
         // Gateway health check
@@ -92,12 +84,15 @@ class APIGateway {
                 architecture: 'Microservices with NoSQL databases',
                 database_approach: 'Database per Service (JSON-NoSQL)',
                 endpoints: {
+                    auth: '/api/auth/*',
                     users: '/api/users/*',
-                    products: '/api/products/*',
+                    items: '/api/items/*',
+                    lists: '/api/lists/*',
+                    categories: '/api/categories',
+                    search: '/api/search',
                     health: '/health',
                     registry: '/registry',
-                    dashboard: '/api/dashboard',
-                    search: '/api/search'
+                    dashboard: '/api/dashboard'
                 },
                 services: serviceRegistry.listServices()
             });
@@ -124,32 +119,11 @@ class APIGateway {
             });
         });
 
-        this.app.use('/api/items', (req, res, next) => {
-            console.log(`🔗 Roteando para item-service: ${req.method} ${req.originalUrl}`);
-            this.proxyRequest('item-service', req, res, next);
-        });
-
-        this.app.use('/api/lists', (req, res, next) => {
-            console.log(`🔗 Roteando para list-service: ${req.method} ${req.originalUrl}`);
-            this.proxyRequest('list-service', req, res, next);
-        });
-
-        // User Service routes - CORRIGIDO
-        this.app.use('/api/users', (req, res, next) => {
-            console.log(`🔗 Roteando para user-service: ${req.method} ${req.originalUrl}`);
-            this.proxyRequest('user-service', req, res, next);
-        });
-
-        // Product Service routes - CORRIGIDO  
-        this.app.use('/api/products', (req, res, next) => {
-            console.log(`🔗 Roteando para product-service: ${req.method} ${req.originalUrl}`);
-            this.proxyRequest('product-service', req, res, next);
-        });
-
         // Endpoints agregados
         this.app.get('/api/dashboard', this.getDashboard.bind(this));
         this.app.get('/api/search', this.globalSearch.bind(this));
     }
+
     setupErrorHandling() {
         // 404 handler
         this.app.use('*', (req, res) => {
@@ -158,8 +132,10 @@ class APIGateway {
                 message: 'Endpoint não encontrado',
                 service: 'api-gateway',
                 availableEndpoints: {
-                    users: '/api/users',
-                    products: '/api/products',
+                    auth: '/api/auth/*',
+                    users: '/api/users/*',
+                    items: '/api/items/*',
+                    lists: '/api/lists/*',
                     dashboard: '/api/dashboard',
                     search: '/api/search'
                 }
@@ -177,10 +153,44 @@ class APIGateway {
         });
     }
 
-    // Proxy request to service
-    async proxyRequest(serviceName, req, res, next) {
+    // Método auxiliar para extrair o nome do serviço da URL
+    extractServiceName(originalPath) {
+        if (originalPath.startsWith('/api/auth')) {
+            return 'user-service';
+        } else if (originalPath.startsWith('/api/users')) {
+            return 'user-service';
+        } else if (originalPath.startsWith('/api/items')) {
+            return 'item-service';
+        } else if (originalPath.startsWith('/api/lists')) {
+            return 'list-service';
+        } else if (originalPath.startsWith('/api/categories')) {
+            return 'item-service';
+        } else if (originalPath.startsWith('/api/search')) {
+            return 'item-service';
+        }
+        
+        return null;
+    }
+
+    // Proxy request refatorado usando RouteMapper
+    async proxyRequest(req, res, next) {
         try {
-            console.log(`🔄 Proxy request: ${req.method} ${req.originalUrl} -> ${serviceName}`);
+            const originalPath = req.originalUrl;
+            const serviceName = this.extractServiceName(originalPath);
+
+            console.log(`🔄 Proxy request: ${req.method} ${originalPath} -> ${serviceName}`);
+
+            console.log('=== 🎯 DEBUG ROTEAMENTO ===');
+            console.log('Original Path:', originalPath);
+            console.log('Service Name:', serviceName);
+
+            if (!serviceName) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Serviço não encontrado para a rota solicitada',
+                    path: originalPath
+                });
+            }
 
             // Verificar circuit breaker
             if (this.isCircuitOpen(serviceName)) {
@@ -192,45 +202,22 @@ class APIGateway {
                 });
             }
 
-            // Descobrir serviço com debug
+            // Descobrir serviço
             let service;
             try {
                 service = serviceRegistry.discover(serviceName);
             } catch (error) {
                 console.error(`❌ Erro na descoberta do serviço ${serviceName}:`, error.message);
-
-                // Debug: listar serviços disponíveis
-                const availableServices = serviceRegistry.listServices();
-                console.log(`📋 Serviços disponíveis:`, Object.keys(availableServices));
-
                 return res.status(503).json({
                     success: false,
                     message: `Serviço ${serviceName} não encontrado`,
                     service: serviceName,
-                    availableServices: Object.keys(availableServices)
+                    availableServices: Object.keys(serviceRegistry.listServices())
                 });
             }
 
-            const originalPath = req.originalUrl;
-            let targetPath = '';
-
-            console.log("DEBUG - Original Path:", originalPath);
-
-            // Extrair o path correto baseado no serviço E na rota
-            if (serviceName === 'user-service') {
-                if (originalPath.startsWith('/api/auth')) {
-                    // /api/auth/login -> /auth/login
-                    // /api/auth/register -> /auth/register
-                    targetPath = originalPath.replace('/api/auth', '/auth');
-                } else if (originalPath.startsWith('/api/users')) {
-                    // /api/users -> /users
-                    // /api/users/123 -> /users/123
-                    targetPath = originalPath.replace('/api/users', '/users');
-                    if (targetPath === '/' || targetPath === '') {
-                        targetPath = '/users';
-                    }
-                }
-            }
+            // Usar RouteMapper para obter o path correto
+            const targetPath = this.routeMapper.map(serviceName, originalPath);
 
             const targetUrl = `${service.url}${targetPath}`;
 
@@ -242,9 +229,9 @@ class APIGateway {
                 url: targetUrl,
                 headers: { ...req.headers },
                 timeout: 10000,
-                family: 4,  // Força IPv4
+                family: 4,
                 validateStatus: function (status) {
-                    return status < 500; // Aceitar todos os status < 500
+                    return status < 500;
                 }
             };
 
@@ -276,10 +263,14 @@ class APIGateway {
             res.status(response.status).json(response.data);
 
         } catch (error) {
+            const serviceName = this.extractServiceName(req.originalUrl);
+            
             // Registrar falha
-            this.recordFailure(serviceName);
+            if (serviceName) {
+                this.recordFailure(serviceName);
+            }
 
-            console.error(`❌ Proxy error for ${serviceName}:`, {
+            console.error(`❌ Proxy error:`, {
                 message: error.message,
                 code: error.code,
                 url: error.config?.url,
@@ -307,15 +298,15 @@ class APIGateway {
             }
         }
     }
-    // Circuit Breaker 
+
+    // Circuit Breaker (mantido igual)
     isCircuitOpen(serviceName) {
         const breaker = this.circuitBreakers.get(serviceName);
         if (!breaker) return false;
 
         const now = Date.now();
 
-        // Verificar se o circuito deve ser meio-aberto
-        if (breaker.isOpen && (now - breaker.lastFailure) > 30000) { // 30 segundos
+        if (breaker.isOpen && (now - breaker.lastFailure) > 30000) {
             breaker.isOpen = false;
             breaker.isHalfOpen = true;
             console.log(`Circuit breaker half-open for ${serviceName}`);
@@ -336,7 +327,6 @@ class APIGateway {
         breaker.failures++;
         breaker.lastFailure = Date.now();
 
-        // Abrir circuito após 3 falhas
         if (breaker.failures >= 3) {
             breaker.isOpen = true;
             breaker.isHalfOpen = false;
@@ -356,7 +346,7 @@ class APIGateway {
         }
     }
 
-    // Dashboard agregado
+    // Dashboard agregado (ajustado para novos serviços)
     async getDashboard(req, res) {
         try {
             const authHeader = req.header('Authorization');
@@ -369,10 +359,11 @@ class APIGateway {
             }
 
             // Buscar dados de múltiplos serviços
-            const [userResponse, productsResponse, categoriesResponse] = await Promise.allSettled([
+            const [userResponse, itemsResponse, categoriesResponse, listsResponse] = await Promise.allSettled([
                 this.callService('user-service', '/users', 'GET', authHeader, { limit: 5 }),
-                this.callService('product-service', '/products', 'GET', null, { limit: 5 }),
-                this.callService('product-service', '/categories', 'GET', null, {})
+                this.callService('item-service', '/items', 'GET', null, { limit: 5 }),
+                this.callService('item-service', '/categories', 'GET', null, {}),
+                this.callService('list-service', '/lists', 'GET', authHeader, { limit: 5 })
             ]);
 
             const dashboard = {
@@ -386,15 +377,20 @@ class APIGateway {
                         data: userResponse.status === 'fulfilled' ? userResponse.value.data : null,
                         error: userResponse.status === 'rejected' ? userResponse.reason.message : null
                     },
-                    products: {
-                        available: productsResponse.status === 'fulfilled',
-                        data: productsResponse.status === 'fulfilled' ? productsResponse.value.data : null,
-                        error: productsResponse.status === 'rejected' ? productsResponse.reason.message : null
+                    items: {
+                        available: itemsResponse.status === 'fulfilled',
+                        data: itemsResponse.status === 'fulfilled' ? itemsResponse.value.data : null,
+                        error: itemsResponse.status === 'rejected' ? itemsResponse.reason.message : null
                     },
                     categories: {
                         available: categoriesResponse.status === 'fulfilled',
                         data: categoriesResponse.status === 'fulfilled' ? categoriesResponse.value.data : null,
                         error: categoriesResponse.status === 'rejected' ? categoriesResponse.reason.message : null
+                    },
+                    lists: {
+                        available: listsResponse.status === 'fulfilled',
+                        data: listsResponse.status === 'fulfilled' ? listsResponse.value.data : null,
+                        error: listsResponse.status === 'rejected' ? listsResponse.reason.message : null
                     }
                 }
             };
@@ -413,7 +409,7 @@ class APIGateway {
         }
     }
 
-    // Busca global entre serviços
+    // Busca global entre serviços (ajustado)
     async globalSearch(req, res) {
         try {
             const { q } = req.query;
@@ -425,10 +421,9 @@ class APIGateway {
                 });
             }
 
-            // Buscar em produtos e usuários (se autenticado)
             const authHeader = req.header('Authorization');
             const searches = [
-                this.callService('product-service', '/search', 'GET', null, { q })
+                this.callService('item-service', '/search', 'GET', null, { q })
             ];
 
             // Adicionar busca de usuários se autenticado
@@ -438,18 +433,17 @@ class APIGateway {
                 );
             }
 
-            const [productResults, userResults] = await Promise.allSettled(searches);
+            const [itemResults, userResults] = await Promise.allSettled(searches);
 
             const results = {
                 query: q,
-                products: {
-                    available: productResults.status === 'fulfilled',
-                    results: productResults.status === 'fulfilled' ? productResults.value.data.results : [],
-                    error: productResults.status === 'rejected' ? productResults.reason.message : null
+                items: {
+                    available: itemResults.status === 'fulfilled',
+                    results: itemResults.status === 'fulfilled' ? itemResults.value.data.results : [],
+                    error: itemResults.status === 'rejected' ? itemResults.reason.message : null
                 }
             };
 
-            // Adicionar resultados de usuários se a busca foi feita
             if (userResults) {
                 results.users = {
                     available: userResults.status === 'fulfilled',
@@ -472,7 +466,7 @@ class APIGateway {
         }
     }
 
-    // Helper para chamar serviços
+    // Helper para chamar serviços (mantido igual)
     async callService(serviceName, path, method = 'GET', authHeader = null, params = {}) {
         const service = serviceRegistry.discover(serviceName);
 
@@ -494,13 +488,12 @@ class APIGateway {
         return response.data;
     }
 
-    // Health checks para serviços registrados
+    // Health checks para serviços registrados (mantido igual)
     startHealthChecks() {
         setInterval(async () => {
             await serviceRegistry.performHealthChecks();
-        }, 30000); // A cada 30 segundos
+        }, 30000);
 
-        // Health check inicial
         setTimeout(async () => {
             await serviceRegistry.performHealthChecks();
         }, 5000);
@@ -520,7 +513,9 @@ class APIGateway {
             console.log('   POST /api/auth/register');
             console.log('   POST /api/auth/login');
             console.log('   GET  /api/users');
-            console.log('   GET  /api/products');
+            console.log('   GET  /api/items');
+            console.log('   GET  /api/lists');
+            console.log('   GET  /api/categories');
             console.log('   GET  /api/search?q=termo');
             console.log('   GET  /api/dashboard');
             console.log('=====================================');

@@ -1,6 +1,7 @@
 {
   "version": "0.2.0",
   "configurations": [
+    // Suas configurações atuais (mantenha-as)
     {
       "name": "Debug User Service",
       "type": "node",
@@ -40,6 +41,27 @@
       "restart": true,
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug: All Services",
+      "configurations": [
+        "Debug User Service",
+        "Debug Item Service", 
+        "Debug List Service",
+        "Debug API Gateway"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "Debug: Core Services",
+      "configurations": [
+        "Debug User Service",
+        "Debug Item Service",
+        "Debug API Gateway"
+      ],
+      "stopAll": true
     }
   ]
 }

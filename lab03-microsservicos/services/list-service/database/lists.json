@@ -1,1 +1,30 @@
-[]
+[
+  {
+    "id": "2cedc762-988e-43fe-ac4b-ffc6ce411a93",
+    "userId": "004648bc-9642-404e-a7e8-b2f51aff3de6",
+    "name": "Minha Lista de Compras",
+    "description": "Lista de compras da semana",
+    "status": "active",
+    "items": [
+      {
+        "itemId": "a816d04f-f427-4674-b5fe-6a6253200606",
+        "itemName": "Feijão",
+        "quantity": 4,
+        "unit": "kg",
+        "estimatedPrice": 8.49,
+        "purchased": true,
+        "notes": "Marca preferida",
+        "addedAt": "2025-09-28T00:46:34.925Z",
+        "updatedAt": "2025-09-28T00:51:15.884Z"
+      }
+    ],
+    "summary": {
+      "totalItems": 4,
+      "purchasedItems": 4,
+      "estimatedTotal": 33.96,
+      "completionPercentage": 100
+    },
+    "createdAt": "2025-09-28T00:29:19.249Z",
+    "updatedAt": "2025-09-28T00:51:15.885Z"
+  }
+]

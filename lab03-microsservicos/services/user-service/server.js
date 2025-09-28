@@ -303,27 +303,6 @@ class UserService {
 
             console.log('Resultado da consulta:', user ? 'USUÁRIO ENCONTRADO' : 'NENHUM USUÁRIO');
 
-            // Teste
-            // const user = await this.usersDb.findOne({
-            //     $or: [
-            //         { email: identifier.toLowerCase() },
-            //         { username: identifier.toLowerCase() }
-            //     ]
-            // });
-
-            // console.log(JSON.stringify({teste: user}));
-
-            // DEBUG: Log do usuário encontrado e sua senha hash
-            // if (user) {
-            //     console.log('DEBUG - User found:');
-            //     console.log('User ID:', user.id);
-            //     console.log('User email:', user.email);
-            //     console.log('User username:', user.username);
-            //     console.log('Stored password hash:', user.password);
-            // } else {
-            //     console.log('DEBUG - No user found with identifier:', identifier);
-            // }
-
             if (!user || !await bcrypt.compare(password, user.password)) {
                 return res.status(401).json({
                     success: false,
