@@ -1,11 +1,13 @@
 import 'package:uuid/uuid.dart';
 
+enum Priority { low, medium, high }
+
 class Task {
   final String id;
   final String title;
   final String description;
   final bool completed;
-  final String priority;
+  final Priority priority;
   final DateTime createdAt;
 
   Task({
@@ -13,7 +15,7 @@ class Task {
     required this.title,
     this.description = '',
     this.completed = false,
-    this.priority = 'medium',
+    this.priority = Priority.medium,
     DateTime? createdAt,
   })  : id = id ?? const Uuid().v4(),
         createdAt = createdAt ?? DateTime.now();
@@ -24,7 +26,7 @@ class Task {
       'title': title,
       'description': description,
       'completed': completed ? 1 : 0,
-      'priority': priority,
+      'priority': priority.name,
       'createdAt': createdAt.toIso8601String(),
     };
   }
@@ -35,7 +37,10 @@ class Task {
       title: map['title'],
       description: map['description'] ?? '',
       completed: map['completed'] == 1,
-      priority: map['priority'] ?? 'medium',
+      priority: Priority.values.firstWhere(
+        (e) => e.name == map['priority'],
+        orElse: () => Priority.medium,
+      ),
       createdAt: DateTime.parse(map['createdAt']),
     );
   }
@@ -44,7 +49,7 @@ class Task {
     String? title,
     String? description,
     bool? completed,
-    String? priority,
+    Priority? priority,
   }) {
     return Task(
       id: id,
