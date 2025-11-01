@@ -38,8 +38,66 @@
       "currency": "BRL"
     },
     "createdAt": "2025-09-21T01:11:29.588Z",
-    "updatedAt": "2025-09-28T00:44:13.038Z",
-    "metadata.lastLogin": "2025-09-28T00:44:13.037Z",
+    "updatedAt": "2025-10-12T22:15:53.946Z",
+    "metadata.lastLogin": "2025-10-12T22:15:53.945Z",
     "metadata.loginCount": 1
+  },
+  {
+    "id": "5d3a6672-caaa-4b69-ab7e-4935fdc8ef9c",
+    "email": "user3@test.com",
+    "username": "testuser3",
+    "password": "$2a$12$Gk/kc59epPOJv/AZPgY1t.C25xVQTTy75JNNaLg/D6LbF4Hcbakei",
+    "firstName": "João",
+    "lastName": "Pedro",
+    "role": "user",
+    "status": "active",
+    "profile": {
+      "bio": null,
+      "avatar": null,
+      "preferences": {
+        "theme": "light",
+        "language": "pt-BR"
+      }
+    },
+    "metadata": {
+      "registrationDate": "2025-10-12T22:03:45.338Z",
+      "lastLogin": null,
+      "loginCount": 0
+    },
+    "preferences": {
+      "defaultStore": "",
+      "currency": "BRL"
+    },
+    "createdAt": "2025-10-12T22:03:45.340Z",
+    "updatedAt": "2025-10-12T22:03:45.340Z"
+  },
+  {
+    "id": "f2cab7cd-bf26-40fd-875d-3014ec3270f0",
+    "email": "user5@test.com",
+    "username": "testuser5",
+    "password": "$2a$12$tmK3LbmU9Pm4e1pgPZ.MqOUeVdQx6hKI27QCVW6Vt9Z2KAAexVUGm",
+    "firstName": "João",
+    "lastName": "Pedro",
+    "role": "user",
+    "status": "active",
+    "profile": {
+      "bio": null,
+      "avatar": null,
+      "preferences": {
+        "theme": "light",
+        "language": "pt-BR"
+      }
+    },
+    "metadata": {
+      "registrationDate": "2025-10-12T22:15:43.163Z",
+      "lastLogin": null,
+      "loginCount": 0
+    },
+    "preferences": {
+      "defaultStore": "",
+      "currency": "BRL"
+    },
+    "createdAt": "2025-10-12T22:15:43.164Z",
+    "updatedAt": "2025-10-12T22:15:43.164Z"
   }
 ]

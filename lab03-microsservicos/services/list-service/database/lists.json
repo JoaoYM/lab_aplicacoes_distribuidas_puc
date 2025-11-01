@@ -9,22 +9,52 @@
       {
         "itemId": "a816d04f-f427-4674-b5fe-6a6253200606",
         "itemName": "Feijão",
-        "quantity": 4,
+        "quantity": 1,
         "unit": "kg",
         "estimatedPrice": 8.49,
         "purchased": true,
         "notes": "Marca preferida",
         "addedAt": "2025-09-28T00:46:34.925Z",
-        "updatedAt": "2025-09-28T00:51:15.884Z"
+        "updatedAt": "2025-10-12T22:18:05.627Z"
       }
     ],
     "summary": {
-      "totalItems": 4,
-      "purchasedItems": 4,
-      "estimatedTotal": 33.96,
+      "totalItems": 1,
+      "purchasedItems": 1,
+      "estimatedTotal": 8.49,
       "completionPercentage": 100
     },
     "createdAt": "2025-09-28T00:29:19.249Z",
-    "updatedAt": "2025-09-28T00:51:15.885Z"
+    "updatedAt": "2025-10-12T22:18:05.628Z"
+  },
+  {
+    "id": "b544e67a-4378-4beb-ae2c-7d74dd63ee39",
+    "userId": "004648bc-9642-404e-a7e8-b2f51aff3de6",
+    "name": "Minha Lista de Compras",
+    "description": "Lista de compras da semana",
+    "status": "active",
+    "items": [],
+    "summary": {
+      "totalItems": 0,
+      "purchasedItems": 0,
+      "estimatedTotal": 0
+    },
+    "createdAt": "2025-10-12T22:05:22.746Z",
+    "updatedAt": "2025-10-12T22:05:22.746Z"
+  },
+  {
+    "id": "d9075f51-b548-4050-b4d9-8885b47a188c",
+    "userId": "004648bc-9642-404e-a7e8-b2f51aff3de6",
+    "name": "Minha Lista de Compras",
+    "description": "Lista de compras da semana",
+    "status": "active",
+    "items": [],
+    "summary": {
+      "totalItems": 0,
+      "purchasedItems": 0,
+      "estimatedTotal": 0
+    },
+    "createdAt": "2025-10-12T22:16:17.607Z",
+    "updatedAt": "2025-10-12T22:16:17.609Z"
   }
 ]
