@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart'; // Adicionar este import
 import 'package:uuid/uuid.dart';
 
 enum Priority { low, medium, high, urgent }
@@ -29,31 +30,31 @@ extension PriorityExtension on Priority {
     }
   }
 
-  // Color get color {
-  //   switch (this) {
-  //     case Priority.low:
-  //       return Colors.green;
-  //     case Priority.medium:
-  //       return Colors.orange;
-  //     case Priority.high:
-  //       return Colors.red;
-  //     case Priority.urgent:
-  //       return Colors.purple;
-  //   }
-  // }
+  Color get color {
+    switch (this) {
+      case Priority.low:
+        return Colors.green;
+      case Priority.medium:
+        return Colors.orange;
+      case Priority.high:
+        return Colors.red;
+      case Priority.urgent:
+        return Colors.purple;
+    }
+  }
 
-  // IconData get icon {
-  //   switch (this) {
-  //     case Priority.low:
-  //       return Icons.flag_outlined;
-  //     case Priority.medium:
-  //       return Icons.flag;
-  //     case Priority.high:
-  //       return Icons.flag;
-  //     case Priority.urgent:
-  //       return Icons.warning;
-  //   }
-  // }
+  IconData get icon {
+    switch (this) {
+      case Priority.low:
+        return Icons.flag_outlined;
+      case Priority.medium:
+        return Icons.flag;
+      case Priority.high:
+        return Icons.flag;
+      case Priority.urgent:
+        return Icons.warning;
+    }
+  }
 
   static Priority fromString(String value) {
     switch (value) {
@@ -69,8 +70,6 @@ extension PriorityExtension on Priority {
         return Priority.medium;
     }
   }
-
-  static List<Priority> get values => [Priority.low, Priority.medium, Priority.high, Priority.urgent];
 }
 
 class Task {
@@ -97,7 +96,7 @@ class Task {
       'title': title,
       'description': description,
       'completed': completed ? 1 : 0,
-      'priority': priority.name, // Usa a extension para converter para string
+      'priority': priority.name,
       'createdAt': createdAt.toIso8601String(),
     };
   }
@@ -108,7 +107,7 @@ class Task {
       title: map['title'],
       description: map['description'] ?? '',
       completed: map['completed'] == 1,
-      priority: PriorityExtension.fromString(map['priority']), // Usa a extension para converter da string
+      priority: PriorityExtension.fromString(map['priority']),
       createdAt: DateTime.parse(map['createdAt']),
     );
   }
