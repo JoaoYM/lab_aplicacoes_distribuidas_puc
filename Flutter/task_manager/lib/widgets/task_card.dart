@@ -16,47 +16,39 @@ class TaskCard extends StatelessWidget {
     required this.onDelete,
   });
 
-  Color _getPriorityColor() {
-    switch (task.priority) {
-      case 'low':
-        return Colors.green;
-      case 'medium':
-        return Colors.orange;
-      case 'high':
-        return Colors.red;
-      case 'urgent':
-        return Colors.purple;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  IconData _getPriorityIcon() {
-    switch (task.priority) {
-      case 'urgent':
-        return Icons.priority_high;
-      default:
-        return Icons.flag;
-    }
-  }
-
-  String _getPriorityLabel() {
-    switch (task.priority) {
-      case 'low':
-        return 'Baixa';
-      case 'medium':
-        return 'Média';
-      case 'high':
-        return 'Alta';
-      case 'urgent':
-        return 'Urgente';
-      default:
-        return 'Média';
+  // Método auxiliar para obter as propriedades visuais baseadas na prioridade
+  Map<String, dynamic> _getPriorityStyle(Priority priority) {
+    switch (priority) {
+      case Priority.low:
+        return {
+          'color': Colors.green,
+          'icon': Icons.flag_outlined,
+          'label': 'Baixa',
+        };
+      case Priority.medium:
+        return {
+          'color': Colors.orange,
+          'icon': Icons.flag,
+          'label': 'Média',
+        };
+      case Priority.high:
+        return {
+          'color': Colors.red,
+          'icon': Icons.flag,
+          'label': 'Alta',
+        };
+      case Priority.urgent:
+        return {
+          'color': Colors.purple,
+          'icon': Icons.warning,
+          'label': 'Urgente',
+        };
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final priorityStyle = _getPriorityStyle(task.priority);
     final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
 
     return Card(
@@ -65,7 +57,7 @@ class TaskCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: task.completed ? Colors.grey.shade300 : _getPriorityColor(),
+          color: task.completed ? Colors.grey.shade300 : priorityStyle['color'],
           width: 2,
         ),
       ),
@@ -141,7 +133,7 @@ class TaskCard extends StatelessWidget {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: _getPriorityColor(),
+                              color: priorityStyle['color'],
                               width: 1,
                             ),
                           ),
@@ -149,16 +141,16 @@ class TaskCard extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                _getPriorityIcon(),
+                                priorityStyle['icon'],
                                 size: 14,
-                                color: _getPriorityColor(),
+                                color: priorityStyle['color'],
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                _getPriorityLabel(),
+                                priorityStyle['label'],
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: _getPriorityColor(),
+                                  color: priorityStyle['color'],
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
