@@ -3,7 +3,7 @@ import '../models/task.dart';
 import '../services/database_service.dart';
 
 class TaskFormScreen extends StatefulWidget {
-  final Task? task; // null = criar novo, não-null = editar
+  final Task? task;
 
   const TaskFormScreen({super.key, this.task});
 
@@ -24,7 +24,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   void initState() {
     super.initState();
 
-    // Se estiver editando, preencher campos
     if (widget.task != null) {
       _titleController.text = widget.task!.title;
       _descriptionController.text = widget.task!.description;
@@ -49,7 +48,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
     try {
       if (widget.task == null) {
-        // Criar nova tarefa
         final newTask = Task(
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
@@ -68,7 +66,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           );
         }
       } else {
-        // Atualizar tarefa existente
         final updatedTask = widget.task!.copyWith(
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
@@ -89,7 +86,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       }
 
       if (mounted) {
-        Navigator.pop(context, true); // Retorna true = sucesso
+        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
@@ -104,6 +101,20 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  // Método auxiliar para obter o ícone baseado na prioridade
+  Icon _getPriorityIcon(Priority priority) {
+    switch (priority) {
+      case Priority.low:
+        return const Icon(Icons.flag_outlined, color: Colors.green);
+      case Priority.medium:
+        return const Icon(Icons.flag, color: Colors.orange);
+      case Priority.high:
+        return const Icon(Icons.flag, color: Colors.red);
+      case Priority.urgent:
+        return const Icon(Icons.warning, color: Colors.purple);
     }
   }
 
@@ -167,7 +178,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
                     const SizedBox(height: 16),
 
-                    // Dropdown de Prioridade (Atualizado para usar Priority enum)
+                    // Dropdown de Prioridade
                     DropdownButtonFormField<Priority>(
                       value: _priority,
                       decoration: const InputDecoration(
@@ -180,7 +191,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                           value: priority,
                           child: Row(
                             children: [
-                              // Icon(priority.icon, color: priority.color),
+                              _getPriorityIcon(priority),
                               const SizedBox(width: 8),
                               Text(priority.displayName),
                             ],
