@@ -20,8 +20,9 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2, 
       onCreate: _createDB,
+      onUpgrade: _upgradeDB, 
     );
   }
 
@@ -33,9 +34,21 @@ class DatabaseService {
         description TEXT,
         completed INTEGER NOT NULL,
         priority TEXT NOT NULL,
-        createdAt TEXT NOT NULL
+        createdAt TEXT NOT NULL,
+        dueDate TEXT,           -- NOVA COLUNA
+        category TEXT,          -- NOVA COLUNA  
+        reminder TEXT           -- NOVA COLUNA
       )
     ''');
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+
+      await db.execute('ALTER TABLE tasks ADD COLUMN dueDate TEXT');
+      await db.execute('ALTER TABLE tasks ADD COLUMN category TEXT');
+      await db.execute('ALTER TABLE tasks ADD COLUMN reminder TEXT');
+    }
   }
 
   Future<Task> create(Task task) async {
@@ -82,5 +95,10 @@ class DatabaseService {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<void> resetDatabase() async {
+    final db = await database;
+    await db.delete('tasks');
   }
 }
