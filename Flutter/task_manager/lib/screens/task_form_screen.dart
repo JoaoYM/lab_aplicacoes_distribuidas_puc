@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/task.dart';
+import '../models/category.dart';
 import '../services/database_service.dart';
 
 class TaskFormScreen extends StatefulWidget {
@@ -19,6 +20,12 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   Priority _priority = Priority.medium;
   bool _completed = false;
   bool _isLoading = false;
+  
+  DateTime? _dueDate;
+  
+  String? _selectedCategory;
+  
+  DateTime? _reminder;
 
   @override
   void initState() {
@@ -29,6 +36,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       _descriptionController.text = widget.task!.description;
       _priority = widget.task!.priority;
       _completed = widget.task!.completed;
+      _dueDate = widget.task!.dueDate; 
+      _selectedCategory = widget.task!.category; 
+      _reminder = widget.task!.reminder; 
     }
   }
 
@@ -37,6 +47,33 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectDueDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _dueDate ?? DateTime.now().add(const Duration(days: 1)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() => _dueDate = picked);
+    }
+  }
+
+  Future<void> _selectReminder() async {
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (pickedTime != null) {
+      final now = DateTime.now();
+      final reminderDateTime = DateTime(
+        now.year, now.month, now.day, 
+        pickedTime.hour, pickedTime.minute
+      );
+      setState(() => _reminder = reminderDateTime);
+    }
   }
 
   Future<void> _saveTask() async {
@@ -53,9 +90,12 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           description: _descriptionController.text.trim(),
           priority: _priority,
           completed: _completed,
+          dueDate: _dueDate,
+          category: _selectedCategory,
+          reminder: _reminder,
         );
         await DatabaseService.instance.create(newTask);
-
+        
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -71,6 +111,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           description: _descriptionController.text.trim(),
           priority: _priority,
           completed: _completed,
+          dueDate: _dueDate, 
+          category: _selectedCategory,
+          reminder: _reminder, 
         );
         await DatabaseService.instance.update(updatedTask);
 
@@ -104,7 +147,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     }
   }
 
-  // Método auxiliar para obter o ícone baseado na prioridade
   Icon _getPriorityIcon(Priority priority) {
     switch (priority) {
       case Priority.low:
@@ -178,6 +220,71 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
                     const SizedBox(height: 16),
 
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.calendar_today),
+                        title: const Text('Data de Vencimento'),
+                        subtitle: Text(
+                          _dueDate == null 
+                            ? 'Nenhuma data definida'
+                            : '${_dueDate!.day}/${_dueDate!.month}/${_dueDate!.year}'
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_dueDate != null)
+                              IconButton(
+                                icon: const Icon(Icons.clear, size: 20),
+                                onPressed: () => setState(() => _dueDate = null),
+                              ),
+                            const Icon(Icons.arrow_forward_ios, size: 16),
+                          ],
+                        ),
+                        onTap: _selectDueDate,
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    DropdownButtonFormField<String>(
+                      value: _selectedCategory,
+                      decoration: const InputDecoration(
+                        labelText: 'Categoria',
+                        prefixIcon: Icon(Icons.category),
+                        border: OutlineInputBorder(),
+                      ),
+                      items: [
+                        const DropdownMenuItem(
+                          value: null,
+                          child: Text('Nenhuma categoria'),
+                        ),
+                        ...Category.predefinedCategories.map((category) {
+                          return DropdownMenuItem(
+                            value: category.id,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 12,
+                                  height: 12,
+                                  decoration: BoxDecoration(
+                                    color: category.color,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Text(category.name),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                      onChanged: (value) {
+                        setState(() => _selectedCategory = value);
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
                     // Dropdown de Prioridade
                     DropdownButtonFormField<Priority>(
                       value: _priority,
@@ -203,6 +310,32 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                           setState(() => _priority = value);
                         }
                       },
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.notifications),
+                        title: const Text('Lembrete'),
+                        subtitle: Text(
+                          _reminder == null 
+                            ? 'Nenhum lembrete definido'
+                            : '${_reminder!.hour.toString().padLeft(2, '0')}:${_reminder!.minute.toString().padLeft(2, '0')}'
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_reminder != null)
+                              IconButton(
+                                icon: const Icon(Icons.clear, size: 20),
+                                onPressed: () => setState(() => _reminder = null),
+                              ),
+                            const Icon(Icons.arrow_forward_ios, size: 16),
+                          ],
+                        ),
+                        onTap: _selectReminder,
+                      ),
                     ),
 
                     const SizedBox(height: 16),
