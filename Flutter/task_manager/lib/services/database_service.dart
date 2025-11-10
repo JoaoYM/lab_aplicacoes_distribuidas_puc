@@ -20,7 +20,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 2, 
+      version: 3, // AUMENTE A VERSÃO para 3
       onCreate: _createDB,
       onUpgrade: _upgradeDB, 
     );
@@ -35,19 +35,39 @@ class DatabaseService {
         completed INTEGER NOT NULL,
         priority TEXT NOT NULL,
         createdAt TEXT NOT NULL,
-        dueDate TEXT,           -- NOVA COLUNA
-        category TEXT,          -- NOVA COLUNA  
-        reminder TEXT           -- NOVA COLUNA
+        dueDate TEXT,           -- EXERCÍCIO 1
+        category TEXT,          -- EXERCÍCIO 2  
+        reminder TEXT,          -- EXERCÍCIO 3
+        
+        -- NOVAS COLUNAS AULA 03
+        photoPath TEXT,         -- Câmera
+        completedAt TEXT,       -- Sensores
+        completedBy TEXT,       -- Sensores ('manual', 'shake')
+        latitude REAL,          -- GPS
+        longitude REAL,         -- GPS
+        locationName TEXT       -- GPS
       )
     ''');
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    // Migração da versão 1 para 2 (Exercícios anteriores)
     if (oldVersion < 2) {
-
       await db.execute('ALTER TABLE tasks ADD COLUMN dueDate TEXT');
       await db.execute('ALTER TABLE tasks ADD COLUMN category TEXT');
       await db.execute('ALTER TABLE tasks ADD COLUMN reminder TEXT');
+    }
+    
+    // Migração da versão 2 para 3 (Aula 03)
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE tasks ADD COLUMN photoPath TEXT');
+      await db.execute('ALTER TABLE tasks ADD COLUMN completedAt TEXT');
+      await db.execute('ALTER TABLE tasks ADD COLUMN completedBy TEXT');
+      await db.execute('ALTER TABLE tasks ADD COLUMN latitude REAL');
+      await db.execute('ALTER TABLE tasks ADD COLUMN longitude REAL');
+      await db.execute('ALTER TABLE tasks ADD COLUMN locationName TEXT');
+      
+      print('✅ Banco de dados atualizado para versão 3 (Aula 03)');
     }
   }
 
@@ -97,8 +117,39 @@ class DatabaseService {
     );
   }
 
+  // NOVO MÉTODO: buscar tarefas por proximidade
+  Future<List<Task>> getTasksNearLocation({
+    required double latitude,
+    required double longitude,
+    double radiusInMeters = 1000,
+  }) async {
+    final allTasks = await readAll();
+
+    return allTasks.where((task) {
+      if (!task.hasLocation) return false;
+
+      // Cálculo de distância usando fórmula simplificada
+      final latDiff = (task.latitude! - latitude).abs();
+      final lonDiff = (task.longitude! - longitude).abs();
+      final distance = ((latDiff * 111000) + (lonDiff * 111000)) / 2;
+
+      return distance <= radiusInMeters;
+    }).toList();
+  }
+
   Future<void> resetDatabase() async {
     final db = await database;
     await db.delete('tasks');
+  }
+
+  // Método para debug: ver estrutura da tabela
+  Future<void> debugTableStructure() async {
+    final db = await database;
+    final tableInfo = await db.rawQuery('PRAGMA table_info(tasks)');
+    print('=== ESTRUTURA DA TABELA tasks ===');
+    for (var column in tableInfo) {
+      print('Coluna: ${column['name']} - Tipo: ${column['type']}');
+    }
+    print('=================================');
   }
 }
