@@ -1,7 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/task.dart';
 import '../models/category.dart';
 import '../services/database_service.dart';
+import '../services/camera_service.dart';
+import '../services/location_service.dart';
+import '../widgets/location_picker.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
@@ -22,10 +26,14 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   bool _isLoading = false;
   
   DateTime? _dueDate;
-  
   String? _selectedCategory;
-  
   DateTime? _reminder;
+
+  // NOVOS CAMPOS - Aula 03
+  String? _photoPath;
+  double? _latitude;
+  double? _longitude;
+  String? _locationName;
 
   @override
   void initState() {
@@ -39,6 +47,12 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       _dueDate = widget.task!.dueDate; 
       _selectedCategory = widget.task!.category; 
       _reminder = widget.task!.reminder; 
+      
+      // NOVOS CAMPOS
+      _photoPath = widget.task!.photoPath;
+      _latitude = widget.task!.latitude;
+      _longitude = widget.task!.longitude;
+      _locationName = widget.task!.locationName;
     }
   }
 
@@ -47,6 +61,95 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  // MÉTODOS DA CÂMERA
+  Future<void> _takePicture() async {
+    final photoPath = await CameraService.instance.takePicture(context);
+
+    if (photoPath != null && mounted) {
+      setState(() => _photoPath = photoPath);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('📸 Foto capturada!'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _removePhoto() {
+    setState(() => _photoPath = null);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('🗑️ Foto removida')),
+    );
+  }
+
+  void _viewPhoto() {
+    if (_photoPath == null) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          body: Center(
+            child: InteractiveViewer(
+              child: Image.file(File(_photoPath!), fit: BoxFit.contain),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // MÉTODOS DE LOCALIZAÇÃO
+  void _showLocationPicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: SingleChildScrollView(
+          child: LocationPicker(
+            initialLatitude: _latitude,
+            initialLongitude: _longitude,
+            initialAddress: _locationName,
+            onLocationSelected: (lat, lon, address) {
+              setState(() {
+                _latitude = lat;
+                _longitude = lon;
+                _locationName = address;
+              });
+              Navigator.pop(context);
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _removeLocation() {
+    setState(() {
+      _latitude = null;
+      _longitude = null;
+      _locationName = null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('🗑️ Localização removida')),
+    );
   }
 
   Future<void> _selectDueDate() async {
@@ -93,13 +196,18 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           dueDate: _dueDate,
           category: _selectedCategory,
           reminder: _reminder,
+          // NOVOS CAMPOS
+          photoPath: _photoPath,
+          latitude: _latitude,
+          longitude: _longitude,
+          locationName: _locationName,
         );
         await DatabaseService.instance.create(newTask);
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('✓ Tarefa criada com sucesso'),
+              content: Text('✅ Tarefa criada com sucesso'),
               backgroundColor: Colors.green,
               duration: Duration(seconds: 2),
             ),
@@ -113,14 +221,19 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           completed: _completed,
           dueDate: _dueDate, 
           category: _selectedCategory,
-          reminder: _reminder, 
+          reminder: _reminder,
+          // NOVOS CAMPOS
+          photoPath: _photoPath,
+          latitude: _latitude,
+          longitude: _longitude,
+          locationName: _locationName,
         );
         await DatabaseService.instance.update(updatedTask);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('✓ Tarefa atualizada com sucesso'),
+              content: Text('✅ Tarefa atualizada com sucesso'),
               backgroundColor: Colors.blue,
               duration: Duration(seconds: 2),
             ),
@@ -135,7 +248,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao salvar: $e'),
+            content: Text('❌ Erro ao salvar: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -169,6 +282,14 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         title: Text(isEditing ? 'Editar Tarefa' : 'Nova Tarefa'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
+        actions: [
+          if (_photoPath != null || _latitude != null)
+            IconButton(
+              icon: const Icon(Icons.visibility),
+              onPressed: _showFeaturesPreview,
+              tooltip: 'Visualizar Features',
+            ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -217,6 +338,16 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       maxLines: 5,
                       maxLength: 500,
                     ),
+
+                    const SizedBox(height: 16),
+
+                    // SEÇÃO FOTO (NOVA)
+                    _buildPhotoSection(),
+
+                    const SizedBox(height: 16),
+
+                    // SEÇÃO LOCALIZAÇÃO (NOVA)
+                    _buildLocationSection(),
 
                     const SizedBox(height: 16),
 
@@ -395,6 +526,208 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 ),
               ),
             ),
+    );
+  }
+
+  // WIDGETS DAS NOVAS SEÇÕES
+
+  Widget _buildPhotoSection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.photo_camera, color: Colors.blue),
+                const SizedBox(width: 8),
+                const Text(
+                  'Foto',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                if (_photoPath != null)
+                  TextButton.icon(
+                    onPressed: _removePhoto,
+                    icon: const Icon(Icons.delete_outline, size: 18),
+                    label: const Text('Remover'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.red,
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            if (_photoPath != null)
+              GestureDetector(
+                onTap: _viewPhoto,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(
+                    File(_photoPath!),
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 200,
+                        color: Colors.grey[200],
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.broken_image, size: 48, color: Colors.grey),
+                            SizedBox(height: 8),
+                            Text('Erro ao carregar imagem'),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              )
+            else
+              OutlinedButton.icon(
+                onPressed: _takePicture,
+                icon: const Icon(Icons.add_a_photo),
+                label: const Text('Adicionar Foto'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.all(16),
+                  minimumSize: const Size(double.infinity, 50),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationSection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.location_on, color: Colors.blue),
+                const SizedBox(width: 8),
+                const Text(
+                  'Localização',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                if (_latitude != null)
+                  TextButton.icon(
+                    onPressed: _removeLocation,
+                    icon: const Icon(Icons.delete_outline, size: 18),
+                    label: const Text('Remover'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.red,
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            if (_latitude != null && _longitude != null)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade100),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Localização definida',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    if (_locationName != null)
+                      Text(
+                        _locationName!,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${_latitude!.toStringAsFixed(6)}, ${_longitude!.toStringAsFixed(6)}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              OutlinedButton.icon(
+                onPressed: _showLocationPicker,
+                icon: const Icon(Icons.add_location),
+                label: const Text('Adicionar Localização'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.all(16),
+                  minimumSize: const Size(double.infinity, 50),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showFeaturesPreview() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Features Adicionadas'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (_photoPath != null) ...[
+              const ListTile(
+                leading: Icon(Icons.photo_camera, color: Colors.green),
+                title: Text('Foto adicionada'),
+              ),
+            ],
+            if (_latitude != null) ...[
+              const ListTile(
+                leading: Icon(Icons.location_on, color: Colors.green),
+                title: Text('Localização adicionada'),
+              ),
+            ],
+            if (_photoPath == null && _latitude == null)
+              const Text('Nenhuma feature adicional adicionada.'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
   }
 }
