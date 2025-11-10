@@ -79,9 +79,17 @@ class Task {
   final bool completed;
   final Priority priority;
   final DateTime createdAt;
-  final DateTime? dueDate; // EXERCÍCIO 1: Data de vencimento
-  final String? category; // EXERCÍCIO 2: Categoria
-  final DateTime? reminder; // EXERCÍCIO 3: Lembrete
+  final DateTime? dueDate;
+  final String? category;
+  final DateTime? reminder;
+
+  // NOVOS CAMPOS - Aula 03
+  final String? photoPath; // Câmera
+  final DateTime? completedAt; // Sensores
+  final String? completedBy; // 'manual', 'shake'
+  final double? latitude; // GPS
+  final double? longitude;
+  final String? locationName;
 
   Task({
     String? id,
@@ -93,8 +101,20 @@ class Task {
     this.dueDate,
     this.category,
     this.reminder,
+    // NOVOS CAMPOS
+    this.photoPath,
+    this.completedAt,
+    this.completedBy,
+    this.latitude,
+    this.longitude,
+    this.locationName,
   })  : id = id ?? const Uuid().v4(),
         createdAt = createdAt ?? DateTime.now();
+
+  // NOVOS GETTERS
+  bool get hasPhoto => photoPath != null && photoPath!.isNotEmpty;
+  bool get hasLocation => latitude != null && longitude != null;
+  bool get wasCompletedByShake => completedBy == 'shake';
 
   Map<String, dynamic> toMap() {
     return {
@@ -104,9 +124,16 @@ class Task {
       'completed': completed ? 1 : 0,
       'priority': priority.name,
       'createdAt': createdAt.toIso8601String(),
-      'dueDate': dueDate?.toIso8601String(), // EXERCÍCIO 1
-      'category': category, // EXERCÍCIO 2
-      'reminder': reminder?.toIso8601String(), // EXERCÍCIO 3
+      'dueDate': dueDate?.toIso8601String(),
+      'category': category,
+      'reminder': reminder?.toIso8601String(),
+      // NOVOS CAMPOS
+      'photoPath': photoPath,
+      'completedAt': completedAt?.toIso8601String(),
+      'completedBy': completedBy,
+      'latitude': latitude,
+      'longitude': longitude,
+      'locationName': locationName,
     };
   }
 
@@ -118,9 +145,16 @@ class Task {
       completed: map['completed'] == 1,
       priority: PriorityExtension.fromString(map['priority']),
       createdAt: DateTime.parse(map['createdAt']),
-      dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null, // EXERCÍCIO 1
-      category: map['category'], // EXERCÍCIO 2
-      reminder: map['reminder'] != null ? DateTime.parse(map['reminder']) : null, // EXERCÍCIO 3
+      dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
+      category: map['category'],
+      reminder: map['reminder'] != null ? DateTime.parse(map['reminder']) : null,
+      // NOVOS CAMPOS
+      photoPath: map['photoPath'],
+      completedAt: map['completedAt'] != null ? DateTime.parse(map['completedAt']) : null,
+      completedBy: map['completedBy'],
+      latitude: map['latitude'] != null ? map['latitude'] as double : null,
+      longitude: map['longitude'] != null ? map['longitude'] as double : null,
+      locationName: map['locationName'],
     );
   }
 
@@ -131,9 +165,16 @@ class Task {
     bool? completed,
     Priority? priority,
     DateTime? createdAt,
-    DateTime? dueDate, // EXERCÍCIO 1
-    String? category, // EXERCÍCIO 2
-    DateTime? reminder, // EXERCÍCIO 3
+    DateTime? dueDate,
+    String? category,
+    DateTime? reminder,
+    // NOVOS CAMPOS
+    String? photoPath,
+    DateTime? completedAt,
+    String? completedBy,
+    double? latitude,
+    double? longitude,
+    String? locationName,
   }) {
     return Task(
       id: id ?? this.id,
@@ -142,19 +183,24 @@ class Task {
       completed: completed ?? this.completed,
       priority: priority ?? this.priority,
       createdAt: createdAt ?? this.createdAt,
-      dueDate: dueDate ?? this.dueDate, // EXERCÍCIO 1
-      category: category ?? this.category, // EXERCÍCIO 2
-      reminder: reminder ?? this.reminder, // EXERCÍCIO 3
+      dueDate: dueDate ?? this.dueDate,
+      category: category ?? this.category,
+      reminder: reminder ?? this.reminder,
+      // NOVOS CAMPOS
+      photoPath: photoPath ?? this.photoPath,
+      completedAt: completedAt ?? this.completedAt,
+      completedBy: completedBy ?? this.completedBy,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      locationName: locationName ?? this.locationName,
     );
   }
 
-  // EXERCÍCIO 1: Verificar se a tarefa está vencida
   bool get isOverdue {
     if (dueDate == null || completed) return false;
     return dueDate!.isBefore(DateTime.now());
   }
 
-  // EXERCÍCIO 1: Dias até o vencimento
   int? get daysUntilDue {
     if (dueDate == null) return null;
     final now = DateTime.now();
@@ -174,18 +220,26 @@ class Task {
         other.createdAt == createdAt &&
         other.dueDate == dueDate &&
         other.category == category &&
-        other.reminder == reminder;
+        other.reminder == reminder &&
+        other.photoPath == photoPath &&
+        other.completedAt == completedAt &&
+        other.completedBy == completedBy &&
+        other.latitude == latitude &&
+        other.longitude == longitude &&
+        other.locationName == locationName;
   }
 
   @override
   int get hashCode {
     return Object.hash(
-      id, title, description, completed, priority, createdAt, dueDate, category, reminder
+      id, title, description, completed, priority, createdAt, 
+      dueDate, category, reminder, photoPath, completedAt, 
+      completedBy, latitude, longitude, locationName
     );
   }
 
   @override
   String toString() {
-    return 'Task(id: $id, title: $title, description: $description, completed: $completed, priority: $priority, createdAt: $createdAt, dueDate: $dueDate, category: $category, reminder: $reminder)';
+    return 'Task(id: $id, title: $title, completed: $completed, priority: $priority, hasPhoto: $hasPhoto, hasLocation: $hasLocation)';
   }
 }
