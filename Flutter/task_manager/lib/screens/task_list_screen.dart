@@ -226,6 +226,12 @@ class _TaskListScreenState extends State<TaskListScreen> {
             onPressed: _exportData,
             tooltip: 'Exportar dados',
           ),
+
+          IconButton(
+            icon: const Icon(Icons.bug_report),
+            onPressed: () => Navigator.pushNamed(context, '/debug'),
+            tooltip: 'Debug Services',
+          ),
           
           // Menu de Ordenação
           PopupMenuButton<String>(
