@@ -1,6 +1,6 @@
 [
   {
-    "id": "59b1a9c7-b0aa-4f4b-ae5c-50c0e359caad",
+    "id": "43f1771d-b9ef-4c60-a5e9-0f0c0d820fb2",
     "name": "Arroz",
     "category": "Alimentos",
     "brand": "Tio João",
@@ -9,11 +9,11 @@
     "barcode": "7891000053500",
     "description": "Arroz branco tipo 1",
     "active": true,
-    "createdAt": "2025-09-21T00:22:10.646Z",
-    "updatedAt": "2025-09-21T00:22:10.646Z"
+    "createdAt": "2025-11-20T19:43:43.370Z",
+    "updatedAt": "2025-11-20T19:43:43.370Z"
   },
   {
-    "id": "a816d04f-f427-4674-b5fe-6a6253200606",
+    "id": "ca77c61b-affe-4858-9478-2231c9de0a88",
     "name": "Feijão",
     "category": "Alimentos",
     "brand": "Camil",
@@ -22,11 +22,11 @@
     "barcode": "7891000053517",
     "description": "Feijão carioca",
     "active": true,
-    "createdAt": "2025-09-21T00:22:10.654Z",
-    "updatedAt": "2025-09-21T00:22:10.654Z"
+    "createdAt": "2025-11-20T19:43:43.450Z",
+    "updatedAt": "2025-11-20T19:43:43.450Z"
   },
   {
-    "id": "9ead3855-db74-4c54-8ae8-2ec4281bf4ef",
+    "id": "536db5c0-010a-411d-b8c4-0d6560c90792",
     "name": "Açúcar",
     "category": "Alimentos",
     "brand": "União",
@@ -35,11 +35,11 @@
     "barcode": "7891000053524",
     "description": "Açúcar refinado",
     "active": true,
-    "createdAt": "2025-09-21T00:22:10.660Z",
-    "updatedAt": "2025-09-21T00:22:10.660Z"
+    "createdAt": "2025-11-20T19:43:43.540Z",
+    "updatedAt": "2025-11-20T19:43:43.540Z"
   },
   {
-    "id": "a71e5061-91b0-4c54-b5e7-bb28cba8df41",
+    "id": "2dea765c-a012-4d45-bfc0-67c12afae543",
     "name": "Macarrão",
     "category": "Alimentos",
     "brand": "Renata",
@@ -48,11 +48,11 @@
     "barcode": "7891000053531",
     "description": "Macarrão espaguete",
     "active": true,
-    "createdAt": "2025-09-21T00:22:10.664Z",
-    "updatedAt": "2025-09-21T00:22:10.664Z"
+    "createdAt": "2025-11-20T19:43:43.629Z",
+    "updatedAt": "2025-11-20T19:43:43.629Z"
   },
   {
-    "id": "b63e0aeb-64fb-477a-8c35-307c2d901602",
+    "id": "67ec9491-6cd2-4d6a-bc6a-7a9c4c5c04c9",
     "name": "Óleo de Soja",
     "category": "Alimentos",
     "brand": "Liza",
@@ -61,11 +61,11 @@
     "barcode": "7891000053548",
     "description": "Óleo de soja refinado",
     "active": true,
-    "createdAt": "2025-09-21T00:22:10.668Z",
-    "updatedAt": "2025-09-21T00:22:10.668Z"
+    "createdAt": "2025-11-20T19:43:43.711Z",
+    "updatedAt": "2025-11-20T19:43:43.711Z"
   },
   {
-    "id": "66cbf90a-6e96-47b8-9dba-4cb355ab3fb1",
+    "id": "76bd0541-a742-492e-92b0-ce9de908389f",
     "name": "Detergente",
     "category": "Limpeza",
     "brand": "Ypê",
@@ -74,11 +74,11 @@
     "barcode": "7891000053555",
     "description": "Detergente líquido",
     "active": true,
-    "createdAt": "2025-09-21T00:22:10.673Z",
-    "updatedAt": "2025-09-21T00:22:10.673Z"
+    "createdAt": "2025-11-20T19:43:43.794Z",
+    "updatedAt": "2025-11-20T19:43:43.794Z"
   },
   {
-    "id": "36de56c2-ed96-44b0-9b71-24ae3f6b7fce",
+    "id": "c364b1b2-c47e-4def-9d3f-1a668000f0f5",
     "name": "Sabão em Pó",
     "category": "Limpeza",
     "brand": "Omo",
@@ -87,89 +87,11 @@
     "barcode": "7891000053562",
     "description": "Sabão em pó multiuso",
     "active": true,
-    "createdAt": "2025-09-21T00:22:10.676Z",
-    "updatedAt": "2025-09-21T00:22:10.676Z"
+    "createdAt": "2025-11-20T19:43:43.873Z",
+    "updatedAt": "2025-11-20T19:43:43.873Z"
   },
   {
-    "id": "14298bd2-ce79-4072-ad86-8285b6b28861",
-    "name": "Água Sanitária",
-    "category": "Limpeza",
-    "brand": "Qboa",
-    "unit": "litro",
-    "averagePrice": 6.79,
-    "barcode": "7891000053579",
-    "description": "Água sanitária",
-    "active": true,
-    "createdAt": "2025-09-21T00:22:10.678Z",
-    "updatedAt": "2025-09-21T00:22:10.678Z"
-  },
-  {
-    "id": "1f27799e-c620-4382-920b-d343053f1788",
-    "name": "Desinfetante",
-    "category": "Limpeza",
-    "brand": "Pinho Sol",
-    "unit": "litro",
-    "averagePrice": 8.99,
-    "barcode": "7891000053586",
-    "description": "Desinfetante pinho",
-    "active": true,
-    "createdAt": "2025-09-21T00:22:10.680Z",
-    "updatedAt": "2025-09-21T00:22:10.680Z"
-  },
-  {
-    "id": "201c5565-829f-492d-81ce-8dc6eb1490e7",
-    "name": "Sabonete",
-    "category": "Higiene",
-    "brand": "Dove",
-    "unit": "un",
-    "averagePrice": 2.99,
-    "barcode": "7891000053593",
-    "description": "Sabonete hidratante",
-    "active": true,
-    "createdAt": "2025-09-21T00:22:10.683Z",
-    "updatedAt": "2025-09-21T00:22:10.683Z"
-  },
-  {
-    "id": "f4a6b407-4df4-42f6-a5d4-df57934cc6e2",
-    "name": "Shampoo",
-    "category": "Higiene",
-    "brand": "Head & Shoulders",
-    "unit": "un",
-    "averagePrice": 15.99,
-    "barcode": "7891000053609",
-    "description": "Shampoo anticaspa",
-    "active": true,
-    "createdAt": "2025-09-21T00:22:10.685Z",
-    "updatedAt": "2025-09-21T00:22:10.685Z"
-  },
-  {
-    "id": "daae769d-519d-48e6-b7f9-ea22bffab3ca",
-    "name": "Creme Dental",
-    "category": "Higiene",
-    "brand": "Colgate",
-    "unit": "un",
-    "averagePrice": 4.79,
-    "barcode": "7891000053616",
-    "description": "Creme dental total 12",
-    "active": true,
-    "createdAt": "2025-09-21T00:22:10.687Z",
-    "updatedAt": "2025-09-21T00:22:10.687Z"
-  },
-  {
-    "id": "5bcc6b4d-75ed-4002-af85-452ab24d4913",
-    "name": "Papel Higiênico",
-    "category": "Higiene",
-    "brand": "Neve",
-    "unit": "un",
-    "averagePrice": 9.99,
-    "barcode": "7891000053623",
-    "description": "Papel higiênico 30m",
-    "active": true,
-    "createdAt": "2025-09-21T00:22:10.690Z",
-    "updatedAt": "2025-09-21T00:22:10.690Z"
-  },
-  {
-    "id": "6652fcca-c3cf-4a2c-a63a-de92beb8aa9d",
+    "id": "cfb33098-e70c-4601-94aa-d38126f9c2a8",
     "name": "Refrigerante",
     "category": "Bebidas",
     "brand": "Coca-Cola",
@@ -178,24 +100,11 @@
     "barcode": "7891000053630",
     "description": "Refrigerante cola",
     "active": true,
-    "createdAt": "2025-09-21T00:22:10.691Z",
-    "updatedAt": "2025-09-21T00:22:10.691Z"
+    "createdAt": "2025-11-20T19:43:43.949Z",
+    "updatedAt": "2025-11-20T19:43:43.949Z"
   },
   {
-    "id": "cca00bc2-1fb1-4abe-99c7-9c232ed2c2fd",
-    "name": "Suco",
-    "category": "Bebidas",
-    "brand": "Del Valle",
-    "unit": "litro",
-    "averagePrice": 6.49,
-    "barcode": "7891000053647",
-    "description": "Suco de laranja",
-    "active": true,
-    "createdAt": "2025-09-21T00:22:10.693Z",
-    "updatedAt": "2025-09-21T00:22:10.693Z"
-  },
-  {
-    "id": "f1784dd6-7490-4b85-b965-5f064e176760",
+    "id": "342b529a-e8eb-460e-be8d-85c0d0bc4b52",
     "name": "Café",
     "category": "Bebidas",
     "brand": "Melitta",
@@ -204,11 +113,11 @@
     "barcode": "7891000053654",
     "description": "Café torrado e moído",
     "active": true,
-    "createdAt": "2025-09-21T00:22:10.695Z",
-    "updatedAt": "2025-09-21T00:22:10.695Z"
+    "createdAt": "2025-11-20T19:43:44.028Z",
+    "updatedAt": "2025-11-20T19:43:44.028Z"
   },
   {
-    "id": "4d6739bb-5020-45fa-b06e-2ffad2c5c2e7",
+    "id": "29a9e960-1853-46a4-b10c-8424b58672ff",
     "name": "Leite",
     "category": "Bebidas",
     "brand": "Itambé",
@@ -217,46 +126,7 @@
     "barcode": "7891000053661",
     "description": "Leite integral",
     "active": true,
-    "createdAt": "2025-09-21T00:22:10.698Z",
-    "updatedAt": "2025-09-21T00:22:10.698Z"
-  },
-  {
-    "id": "41576885-ca6f-42ce-844b-f88c49929b06",
-    "name": "Pão Francês",
-    "category": "Padaria",
-    "brand": "",
-    "unit": "un",
-    "averagePrice": 0.5,
-    "barcode": "",
-    "description": "Pão francês",
-    "active": true,
-    "createdAt": "2025-09-21T00:22:10.700Z",
-    "updatedAt": "2025-09-21T00:22:10.700Z"
-  },
-  {
-    "id": "87375af7-ba6c-42e6-aa85-e8b5078f131e",
-    "name": "Bolo",
-    "category": "Padaria",
-    "brand": "",
-    "unit": "kg",
-    "averagePrice": 24.99,
-    "barcode": "",
-    "description": "Bolo simples",
-    "active": true,
-    "createdAt": "2025-09-21T00:22:10.701Z",
-    "updatedAt": "2025-09-21T00:22:10.701Z"
-  },
-  {
-    "id": "c5edafd0-91c6-4fc8-8c29-1a32f4621bab",
-    "name": "Biscoito",
-    "category": "Padaria",
-    "brand": "Marilan",
-    "unit": "un",
-    "averagePrice": 3.49,
-    "barcode": "7891000053678",
-    "description": "Biscoito água e sal",
-    "active": true,
-    "createdAt": "2025-09-21T00:22:10.702Z",
-    "updatedAt": "2025-09-21T00:22:10.702Z"
+    "createdAt": "2025-11-20T19:43:44.119Z",
+    "updatedAt": "2025-11-20T19:43:44.119Z"
   }
 ]

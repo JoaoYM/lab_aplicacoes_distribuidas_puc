@@ -15,7 +15,7 @@ class ItemService {
         this.port = process.env.PORT || 3003;
         this.serviceName = 'item-service';
         this.serviceUrl = `http://127.0.0.1:${this.port}`;
-        
+
         this.setupDatabase();
         this.setupMiddleware();
         this.setupRoutes();
@@ -29,54 +29,118 @@ class ItemService {
         console.log('Item Service: Banco NoSQL inicializado');
     }
 
+    // async seedInitialData() {
+    //     setTimeout(async () => {
+    //         try {
+    //             const existingItems = await this.itemsDb.find();
+
+    //             if (existingItems.length === 0) {
+    //                 const sampleItems = [
+    //                     // Alimentos
+    //                     { id: uuidv4(), name: 'Arroz', category: 'Alimentos', brand: 'Tio João', unit: 'kg', averagePrice: 5.99, barcode: '7891000053500', description: 'Arroz branco tipo 1', active: true },
+    //                     { id: uuidv4(), name: 'Feijão', category: 'Alimentos', brand: 'Camil', unit: 'kg', averagePrice: 8.49, barcode: '7891000053517', description: 'Feijão carioca', active: true },
+    //                     { id: uuidv4(), name: 'Açúcar', category: 'Alimentos', brand: 'União', unit: 'kg', averagePrice: 4.29, barcode: '7891000053524', description: 'Açúcar refinado', active: true },
+    //                     { id: uuidv4(), name: 'Macarrão', category: 'Alimentos', brand: 'Renata', unit: 'un', averagePrice: 3.99, barcode: '7891000053531', description: 'Macarrão espaguete', active: true },
+    //                     { id: uuidv4(), name: 'Óleo de Soja', category: 'Alimentos', brand: 'Liza', unit: 'litro', averagePrice: 7.89, barcode: '7891000053548', description: 'Óleo de soja refinado', active: true },
+
+    //                     // Limpeza
+    //                     { id: uuidv4(), name: 'Detergente', category: 'Limpeza', brand: 'Ypê', unit: 'un', averagePrice: 2.49, barcode: '7891000053555', description: 'Detergente líquido', active: true },
+    //                     { id: uuidv4(), name: 'Sabão em Pó', category: 'Limpeza', brand: 'Omo', unit: 'kg', averagePrice: 12.99, barcode: '7891000053562', description: 'Sabão em pó multiuso', active: true },
+    //                     { id: uuidv4(), name: 'Água Sanitária', category: 'Limpeza', brand: 'Qboa', unit: 'litro', averagePrice: 6.79, barcode: '7891000053579', description: 'Água sanitária', active: true },
+    //                     { id: uuidv4(), name: 'Desinfetante', category: 'Limpeza', brand: 'Pinho Sol', unit: 'litro', averagePrice: 8.99, barcode: '7891000053586', description: 'Desinfetante pinho', active: true },
+
+    //                     // Higiene
+    //                     { id: uuidv4(), name: 'Sabonete', category: 'Higiene', brand: 'Dove', unit: 'un', averagePrice: 2.99, barcode: '7891000053593', description: 'Sabonete hidratante', active: true },
+    //                     { id: uuidv4(), name: 'Shampoo', category: 'Higiene', brand: 'Head & Shoulders', unit: 'un', averagePrice: 15.99, barcode: '7891000053609', description: 'Shampoo anticaspa', active: true },
+    //                     { id: uuidv4(), name: 'Creme Dental', category: 'Higiene', brand: 'Colgate', unit: 'un', averagePrice: 4.79, barcode: '7891000053616', description: 'Creme dental total 12', active: true },
+    //                     { id: uuidv4(), name: 'Papel Higiênico', category: 'Higiene', brand: 'Neve', unit: 'un', averagePrice: 9.99, barcode: '7891000053623', description: 'Papel higiênico 30m', active: true },
+
+    //                     // Bebidas
+    //                     { id: uuidv4(), name: 'Refrigerante', category: 'Bebidas', brand: 'Coca-Cola', unit: 'litro', averagePrice: 7.99, barcode: '7891000053630', description: 'Refrigerante cola', active: true },
+    //                     { id: uuidv4(), name: 'Suco', category: 'Bebidas', brand: 'Del Valle', unit: 'litro', averagePrice: 6.49, barcode: '7891000053647', description: 'Suco de laranja', active: true },
+    //                     { id: uuidv4(), name: 'Café', category: 'Bebidas', brand: 'Melitta', unit: 'kg', averagePrice: 14.99, barcode: '7891000053654', description: 'Café torrado e moído', active: true },
+    //                     { id: uuidv4(), name: 'Leite', category: 'Bebidas', brand: 'Itambé', unit: 'litro', averagePrice: 4.29, barcode: '7891000053661', description: 'Leite integral', active: true },
+
+    //                     // Padaria
+    //                     { id: uuidv4(), name: 'Pão Francês', category: 'Padaria', brand: '', unit: 'un', averagePrice: 0.50, barcode: '', description: 'Pão francês', active: true },
+    //                     { id: uuidv4(), name: 'Bolo', category: 'Padaria', brand: '', unit: 'kg', averagePrice: 24.99, barcode: '', description: 'Bolo simples', active: true },
+    //                     { id: uuidv4(), name: 'Biscoito', category: 'Padaria', brand: 'Marilan', unit: 'un', averagePrice: 3.49, barcode: '7891000053678', description: 'Biscoito água e sal', active: true }
+    //                 ];
+
+    //                 for (const item of sampleItems) {
+    //                     await this.itemsDb.create(item);
+    //                 }
+
+    //                 console.log('Itens de exemplo criados no Item Service');
+    //             }
+    //         } catch (error) {
+    //             console.error('Erro ao criar dados iniciais:', error);
+    //         }
+    //     }, 1000);
+    // }
     async seedInitialData() {
+        console.log('🎯 Verificando dados iniciais do Item Service...');
+
+        // Aguardar um pouco mais para garantir inicialização
         setTimeout(async () => {
             try {
                 const existingItems = await this.itemsDb.find();
-                
+                console.log(`📦 Itens existentes no banco: ${existingItems.length}`);
+
                 if (existingItems.length === 0) {
+                    console.log('🔄 Criando dados iniciais...');
+
                     const sampleItems = [
                         // Alimentos
-                        { id: uuidv4(), name: 'Arroz', category: 'Alimentos', brand: 'Tio João', unit: 'kg', averagePrice: 5.99, barcode: '7891000053500', description: 'Arroz branco tipo 1', active: true },
-                        { id: uuidv4(), name: 'Feijão', category: 'Alimentos', brand: 'Camil', unit: 'kg', averagePrice: 8.49, barcode: '7891000053517', description: 'Feijão carioca', active: true },
-                        { id: uuidv4(), name: 'Açúcar', category: 'Alimentos', brand: 'União', unit: 'kg', averagePrice: 4.29, barcode: '7891000053524', description: 'Açúcar refinado', active: true },
-                        { id: uuidv4(), name: 'Macarrão', category: 'Alimentos', brand: 'Renata', unit: 'un', averagePrice: 3.99, barcode: '7891000053531', description: 'Macarrão espaguete', active: true },
-                        { id: uuidv4(), name: 'Óleo de Soja', category: 'Alimentos', brand: 'Liza', unit: 'litro', averagePrice: 7.89, barcode: '7891000053548', description: 'Óleo de soja refinado', active: true },
-                        
+                        { name: 'Arroz', category: 'Alimentos', brand: 'Tio João', unit: 'kg', averagePrice: 5.99, barcode: '7891000053500', description: 'Arroz branco tipo 1', active: true },
+                        { name: 'Feijão', category: 'Alimentos', brand: 'Camil', unit: 'kg', averagePrice: 8.49, barcode: '7891000053517', description: 'Feijão carioca', active: true },
+                        { name: 'Açúcar', category: 'Alimentos', brand: 'União', unit: 'kg', averagePrice: 4.29, barcode: '7891000053524', description: 'Açúcar refinado', active: true },
+                        { name: 'Macarrão', category: 'Alimentos', brand: 'Renata', unit: 'un', averagePrice: 3.99, barcode: '7891000053531', description: 'Macarrão espaguete', active: true },
+                        { name: 'Óleo de Soja', category: 'Alimentos', brand: 'Liza', unit: 'litro', averagePrice: 7.89, barcode: '7891000053548', description: 'Óleo de soja refinado', active: true },
+
                         // Limpeza
-                        { id: uuidv4(), name: 'Detergente', category: 'Limpeza', brand: 'Ypê', unit: 'un', averagePrice: 2.49, barcode: '7891000053555', description: 'Detergente líquido', active: true },
-                        { id: uuidv4(), name: 'Sabão em Pó', category: 'Limpeza', brand: 'Omo', unit: 'kg', averagePrice: 12.99, barcode: '7891000053562', description: 'Sabão em pó multiuso', active: true },
-                        { id: uuidv4(), name: 'Água Sanitária', category: 'Limpeza', brand: 'Qboa', unit: 'litro', averagePrice: 6.79, barcode: '7891000053579', description: 'Água sanitária', active: true },
-                        { id: uuidv4(), name: 'Desinfetante', category: 'Limpeza', brand: 'Pinho Sol', unit: 'litro', averagePrice: 8.99, barcode: '7891000053586', description: 'Desinfetante pinho', active: true },
-                        
-                        // Higiene
-                        { id: uuidv4(), name: 'Sabonete', category: 'Higiene', brand: 'Dove', unit: 'un', averagePrice: 2.99, barcode: '7891000053593', description: 'Sabonete hidratante', active: true },
-                        { id: uuidv4(), name: 'Shampoo', category: 'Higiene', brand: 'Head & Shoulders', unit: 'un', averagePrice: 15.99, barcode: '7891000053609', description: 'Shampoo anticaspa', active: true },
-                        { id: uuidv4(), name: 'Creme Dental', category: 'Higiene', brand: 'Colgate', unit: 'un', averagePrice: 4.79, barcode: '7891000053616', description: 'Creme dental total 12', active: true },
-                        { id: uuidv4(), name: 'Papel Higiênico', category: 'Higiene', brand: 'Neve', unit: 'un', averagePrice: 9.99, barcode: '7891000053623', description: 'Papel higiênico 30m', active: true },
-                        
+                        { name: 'Detergente', category: 'Limpeza', brand: 'Ypê', unit: 'un', averagePrice: 2.49, barcode: '7891000053555', description: 'Detergente líquido', active: true },
+                        { name: 'Sabão em Pó', category: 'Limpeza', brand: 'Omo', unit: 'kg', averagePrice: 12.99, barcode: '7891000053562', description: 'Sabão em pó multiuso', active: true },
+
                         // Bebidas
-                        { id: uuidv4(), name: 'Refrigerante', category: 'Bebidas', brand: 'Coca-Cola', unit: 'litro', averagePrice: 7.99, barcode: '7891000053630', description: 'Refrigerante cola', active: true },
-                        { id: uuidv4(), name: 'Suco', category: 'Bebidas', brand: 'Del Valle', unit: 'litro', averagePrice: 6.49, barcode: '7891000053647', description: 'Suco de laranja', active: true },
-                        { id: uuidv4(), name: 'Café', category: 'Bebidas', brand: 'Melitta', unit: 'kg', averagePrice: 14.99, barcode: '7891000053654', description: 'Café torrado e moído', active: true },
-                        { id: uuidv4(), name: 'Leite', category: 'Bebidas', brand: 'Itambé', unit: 'litro', averagePrice: 4.29, barcode: '7891000053661', description: 'Leite integral', active: true },
-                        
-                        // Padaria
-                        { id: uuidv4(), name: 'Pão Francês', category: 'Padaria', brand: '', unit: 'un', averagePrice: 0.50, barcode: '', description: 'Pão francês', active: true },
-                        { id: uuidv4(), name: 'Bolo', category: 'Padaria', brand: '', unit: 'kg', averagePrice: 24.99, barcode: '', description: 'Bolo simples', active: true },
-                        { id: uuidv4(), name: 'Biscoito', category: 'Padaria', brand: 'Marilan', unit: 'un', averagePrice: 3.49, barcode: '7891000053678', description: 'Biscoito água e sal', active: true }
+                        { name: 'Refrigerante', category: 'Bebidas', brand: 'Coca-Cola', unit: 'litro', averagePrice: 7.99, barcode: '7891000053630', description: 'Refrigerante cola', active: true },
+                        { name: 'Café', category: 'Bebidas', brand: 'Melitta', unit: 'kg', averagePrice: 14.99, barcode: '7891000053654', description: 'Café torrado e moído', active: true },
+                        { name: 'Leite', category: 'Bebidas', brand: 'Itambé', unit: 'litro', averagePrice: 4.29, barcode: '7891000053661', description: 'Leite integral', active: true }
                     ];
 
+                    let createdCount = 0;
                     for (const item of sampleItems) {
-                        await this.itemsDb.create(item);
+                        try {
+                            await this.itemsDb.create(item);
+                            createdCount++;
+                            console.log(`✅ ${item.name} - R$ ${item.averagePrice}`);
+                        } catch (error) {
+                            console.log(`❌ Erro ao criar ${item.name}:`, error.message);
+                        }
+
+                        // Pequena pausa entre criações
+                        await new Promise(resolve => setTimeout(resolve, 50));
                     }
 
-                    console.log('Itens de exemplo criados no Item Service');
+                    console.log(`🎉 ${createdCount} itens criados com sucesso!`);
+
+                    // Verificar novamente
+                    const finalItems = await this.itemsDb.find();
+                    console.log(`📊 Total de itens no banco: ${finalItems.length}`);
+
+                } else {
+                    console.log('✅ Banco já possui dados, mostrando itens:');
+                    existingItems.slice(0, 5).forEach(item => {
+                        console.log(`   🛒 ${item.name} - R$ ${item.averagePrice}`);
+                    });
+                    if (existingItems.length > 5) {
+                        console.log(`   ... e mais ${existingItems.length - 5} itens`);
+                    }
                 }
             } catch (error) {
-                console.error('Erro ao criar dados iniciais:', error);
+                console.error('❌ Erro ao verificar/criar dados iniciais:', error);
             }
-        }, 1000);
+        }, 2000); // 2 segundos de delay
     }
 
     setupMiddleware() {
@@ -93,7 +157,7 @@ class ItemService {
             try {
                 const itemCount = await this.itemsDb.count();
                 const activeItems = await this.itemsDb.count({ active: true });
-                
+
                 res.json({
                     service: this.serviceName,
                     status: 'healthy',
@@ -136,10 +200,10 @@ class ItemService {
         this.app.get('/items/:id', this.getItem.bind(this));
         this.app.post('/items', this.authMiddleware.bind(this), this.createItem.bind(this));
         this.app.put('/items/:id', this.authMiddleware.bind(this), this.updateItem.bind(this));
-        
+
         // Category routes
         this.app.get('/categories', this.getCategories.bind(this));
-        
+
         // Search route
         this.app.get('/search', this.searchItems.bind(this));
     }
@@ -166,7 +230,7 @@ class ItemService {
     // Auth middleware
     async authMiddleware(req, res, next) {
         const authHeader = req.header('Authorization');
-        
+
         if (!authHeader?.startsWith('Bearer ')) {
             return res.status(401).json({
                 success: false,
@@ -199,16 +263,78 @@ class ItemService {
     }
 
     // Get items
+    // async getItems(req, res) {
+    //     console.log('Buscando itens com filtros aplicados:', req.query);
+
+    //     try {
+    //         const { page = 1, limit = 10, category, search, active = true } = req.query;
+    //         const skip = (page - 1) * parseInt(limit);
+
+    //         const filter = {};
+
+    //         if (active !== undefined) {
+    //             filter.active = active === 'true';
+    //         }
+
+    //         if (category) filter.category = category;
+
+    //         let items;
+
+    //         if (search) {
+    //             items = await this.itemsDb.search(search, ['name', 'description', 'brand', 'category']);
+    //             items = items.filter(item => {
+    //                 for (const [key, value] of Object.entries(filter)) {
+    //                     if (item[key] !== value) return false;
+    //                 }
+    //                 return true;
+    //             });
+    //             items = items.slice(skip, skip + parseInt(limit));
+    //         } else {
+    //             items = await this.itemsDb.find(filter, {
+    //                 skip: skip,
+    //                 limit: parseInt(limit),
+    //                 sort: { name: 1 }
+    //             });
+    //         }
+
+    //         const total = await this.itemsDb.count(filter);
+    //         console.log(`Itens retornados: ${items.length} de ${total} (Página ${page})`);
+
+    //         res.json({
+    //             success: true,
+    //             data: items,
+    //             pagination: {
+    //                 page: parseInt(page),
+    //                 limit: parseInt(limit),
+    //                 total: total,
+    //                 pages: Math.ceil(total / parseInt(limit))
+    //             },
+    //             hum: "Serviço de Itens funcionando perfeitamente!"
+    //         });
+    //     } catch (error) {
+    //         console.error('Erro ao buscar itens:', error);
+    //         res.status(500).json({
+    //             success: false,
+    //             message: 'Erro interno do servidor'
+    //         });
+    //     }
+    // }
     async getItems(req, res) {
+        console.log('🎯 Buscando itens com filtros aplicados:', req.query);
+
         try {
-            const { page = 1, limit = 10, category, search, active = true } = req.query;
+            const { page = 1, limit = 10, category, search, active } = req.query;
             const skip = (page - 1) * parseInt(limit);
-            
-            const filter = { active: active === 'true' };
+
+            const filter = {};
+            if (active !== undefined) {
+                filter.active = active === 'true';
+            }
+
             if (category) filter.category = category;
 
             let items;
-            
+
             if (search) {
                 items = await this.itemsDb.search(search, ['name', 'description', 'brand', 'category']);
                 items = items.filter(item => {
@@ -227,7 +353,9 @@ class ItemService {
             }
 
             const total = await this.itemsDb.count(filter);
+            console.log(`📊 Itens retornados: ${items.length} de ${total} (Página ${page})`);
 
+            // ✅ CORREÇÃO: Adicionar campo "hum" na resposta
             res.json({
                 success: true,
                 data: items,
@@ -236,10 +364,12 @@ class ItemService {
                     limit: parseInt(limit),
                     total: total,
                     pages: Math.ceil(total / parseInt(limit))
-                }
+                },
+                hum: "🎉 Serviço de Itens funcionando perfeitamente via Gateway!"
             });
+
         } catch (error) {
-            console.error('Erro ao buscar itens:', error);
+            console.error('❌ Erro ao buscar itens:', error);
             res.status(500).json({
                 success: false,
                 message: 'Erro interno do servidor'
@@ -355,7 +485,7 @@ class ItemService {
     async getCategories(req, res) {
         try {
             const items = await this.itemsDb.find({ active: true });
-            
+
             const categoriesMap = new Map();
             items.forEach(item => {
                 if (item.category) {
@@ -371,7 +501,7 @@ class ItemService {
 
             const categories = Array.from(categoriesMap.values())
                 .sort((a, b) => a.name.localeCompare(b.name));
-            
+
             res.json({
                 success: true,
                 data: categories
@@ -449,7 +579,7 @@ class ItemService {
             endpoints: ['/health', '/items', '/categories', '/search']
         });
     }
-    
+
     start() {
         this.app.listen(this.port, () => {
             console.log('=====================================');
@@ -457,7 +587,7 @@ class ItemService {
             console.log(`URL: ${this.serviceUrl}`);
             console.log(`Health: ${this.serviceUrl}/health`);
             console.log('=====================================');
-            
+
             this.registerWithRegistry();
             this.startHealthReporting();
         });

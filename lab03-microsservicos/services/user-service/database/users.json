@@ -9,7 +9,9 @@
     "role": "admin",
     "status": "active",
     "createdAt": "2025-09-21T00:25:06.626Z",
-    "updatedAt": "2025-09-21T00:25:06.626Z"
+    "updatedAt": "2025-11-23T02:25:38.647Z",
+    "metadata.lastLogin": "2025-11-23T02:25:38.646Z",
+    "metadata.loginCount": 1
   },
   {
     "id": "004648bc-9642-404e-a7e8-b2f51aff3de6",

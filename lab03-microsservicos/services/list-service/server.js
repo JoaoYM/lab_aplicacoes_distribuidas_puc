@@ -6,6 +6,7 @@ const morgan = require('morgan');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const axios = require('axios');
+const amqp = require('amqplib');
 
 const JsonDatabase = require('../../shared/JsonDatabase');
 const serviceRegistry = require('../../shared/serviceRegistry');
@@ -16,9 +17,13 @@ class ListService {
         this.port = process.env.PORT || 3004;
         this.serviceName = 'list-service';
         this.serviceUrl = `http://127.0.0.1:${this.port}`;
-        
+        this.rabbitmqUrl = process.env.RABBITMQ_URL || 'amqp://guest:guest@localhost:5672';
+        this.connection = null;
+        this.channel = null;
+
         this.setupDatabase();
         this.setupMiddleware();
+        this.setupRabbitMQ();
         this.setupRoutes();
         this.setupErrorHandling();
     }
@@ -42,7 +47,7 @@ class ListService {
         this.app.get('/health', async (req, res) => {
             try {
                 const listCount = await this.listsDb.count();
-                
+
                 res.json({
                     service: this.serviceName,
                     status: 'healthy',
@@ -77,10 +82,13 @@ class ListService {
                     'POST /lists/:id/items',
                     'PUT /lists/:id/items/:itemId',
                     'DELETE /lists/:id/items/:itemId',
-                    'GET /lists/:id/summary'
+                    'GET /lists/:id/summary',
+                    'POST /lists/:id/checkout'
                 ]
             });
         });
+
+        this.app.post('/lists/:id/checkout', this.authMiddleware.bind(this), this.checkoutList.bind(this));
 
         // List routes (todos requerem autenticação)
         this.app.post('/lists', this.authMiddleware.bind(this), this.createList.bind(this));
@@ -88,12 +96,12 @@ class ListService {
         this.app.get('/lists/:id', this.authMiddleware.bind(this), this.getList.bind(this));
         this.app.put('/lists/:id', this.authMiddleware.bind(this), this.updateList.bind(this));
         this.app.delete('/lists/:id', this.authMiddleware.bind(this), this.deleteList.bind(this));
-        
+
         // List items routes
         this.app.post('/lists/:id/items', this.authMiddleware.bind(this), this.addItemToList.bind(this));
         this.app.put('/lists/:id/items/:itemId', this.authMiddleware.bind(this), this.updateItemInList.bind(this));
         this.app.delete('/lists/:id/items/:itemId', this.authMiddleware.bind(this), this.removeItemFromList.bind(this));
-        
+
         // Summary route
         this.app.get('/lists/:id/summary', this.authMiddleware.bind(this), this.getListSummary.bind(this));
     }
@@ -117,10 +125,31 @@ class ListService {
         });
     }
 
+    async setupRabbitMQ() {
+        try {
+            console.log('🔗 Conectando ao RabbitMQ no Docker...');
+            this.connection = await amqp.connect(this.rabbitmqUrl);
+            this.channel = await this.connection.createChannel();
+
+            // Garantir que a exchange existe
+            await this.channel.assertExchange('shopping_events', 'topic', {
+                durable: true
+            });
+
+            console.log('✅ List Service conectado ao RabbitMQ no Docker');
+        } catch (error) {
+            console.error('❌ Erro ao conectar com RabbitMQ:', error.message);
+            console.log('💡 Certifique-se de que o RabbitMQ está rodando: npm run docker:up');
+
+            // Tentar reconectar após 5 segundos
+            setTimeout(() => this.setupRabbitMQ(), 5000);
+        }
+    }
+
     // Auth middleware
     async authMiddleware(req, res, next) {
         const authHeader = req.header('Authorization');
-        
+
         if (!authHeader?.startsWith('Bearer ')) {
             return res.status(401).json({
                 success: false,
@@ -148,6 +177,203 @@ class ListService {
             res.status(503).json({
                 success: false,
                 message: 'Serviço de autenticação indisponível'
+            });
+        }
+    }
+
+    // Conectar ao RabbitMQ
+    async connectRabbitMQ() {
+        try {
+            // Para LocalStack, use a URL do LocalStack
+            const rabbitmqUrl = process.env.LOCALSTACK_RABBITMQ_URL || this.rabbitmqUrl;
+            this.connection = await amqp.connect(rabbitmqUrl);
+            this.channel = await this.connection.createChannel();
+
+            // Declarar exchange
+            await this.channel.assertExchange('shopping_events', 'topic', {
+                durable: true
+            });
+
+            console.log('✅ Conectado ao RabbitMQ (LocalStack)');
+        } catch (error) {
+            console.error('❌ Erro ao conectar com RabbitMQ:', error.message);
+        }
+    }
+
+    // Publicar evento de checkout
+    async publishCheckoutEvent(listId, userId, items, totalAmount) {
+        if (!this.channel) {
+            console.warn('RabbitMQ não disponível - evento não publicado');
+            return;
+        }
+
+        try {
+            const event = {
+                eventId: require('uuid').v4(),
+                type: 'list.checkout.completed',
+                listId,
+                userId,
+                items: items.map(item => ({
+                    itemId: item.itemId,
+                    itemName: item.itemName,
+                    quantity: item.quantity,
+                    unit: item.unit,
+                    estimatedPrice: item.estimatedPrice
+                })),
+                totalAmount,
+                timestamp: new Date().toISOString(),
+                metadata: {
+                    service: 'list-service',
+                    version: '1.0.0'
+                }
+            };
+
+            const published = await this.channel.publish(
+                'shopping_events',
+                'list.checkout.completed',
+                Buffer.from(JSON.stringify(event)),
+                { persistent: true }
+            );
+
+            if (published) {
+                console.log(`📤 Evento publicado: ${event.type} para lista ${listId}`);
+                console.log(`   📊 Total: R$ ${totalAmount.toFixed(2)}`);
+                console.log(`   📦 Itens: ${items.length}`);
+            } else {
+                console.warn('⚠️ Evento não foi publicado (canal fechado)');
+            }
+
+        } catch (error) {
+            console.error('❌ Erro ao publicar evento:', error);
+        }
+    }
+
+    // Nova rota de checkout
+    // async checkoutList(req, res) {
+    //     try {
+    //         const { id } = req.params;
+
+    //         const list = await this.listsDb.findById(id);
+    //         if (!list) {
+    //             return res.status(404).json({
+    //                 success: false,
+    //                 message: 'Lista não encontrada'
+    //             });
+    //         }
+
+    //         if (list.userId !== req.user.id) {
+    //             return res.status(403).json({
+    //                 success: false,
+    //                 message: 'Acesso negado a esta lista'
+    //             });
+    //         }
+
+    //         if (list.items.length === 0) {
+    //             return res.status(400).json({
+    //                 success: false,
+    //                 message: 'Lista vazia - não é possível fazer checkout'
+    //             });
+    //         }
+
+    //         // Publicar evento assíncrono
+    //         await this.publishCheckoutEvent(
+    //             list.id,
+    //             list.userId,
+    //             list.items,
+    //             list.summary.estimatedTotal
+    //         );
+
+    //         // Atualizar status da lista
+    //         await this.listsDb.update(id, {
+    //             status: 'completed',
+    //             completedAt: new Date().toISOString(),
+    //             updatedAt: new Date().toISOString()
+    //         });
+
+    //         // Resposta imediata (202 Accepted)
+    //         res.status(202).json({
+    //             success: true,
+    //             message: 'Checkout iniciado - processamento em background',
+    //             data: {
+    //                 listId: list.id,
+    //                 status: 'processing',
+    //                 totalItems: list.items.length,
+    //                 totalAmount: list.summary.estimatedTotal,
+    //                 message: 'Evento publicado para processamento assíncrono'
+    //             }
+    //         });
+
+    //     } catch (error) {
+    //         console.error('Erro no checkout:', error);
+    //         res.status(500).json({
+    //             success: false,
+    //             message: 'Erro interno do servidor'
+    //         });
+    //     }
+    // }
+    async checkoutList(req, res) {
+        try {
+            const { id } = req.params;
+
+            console.log(`🎯 Processando checkout para lista: ${id}`);
+
+            const list = await this.listsDb.findById(id);
+            if (!list) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Lista não encontrada'
+                });
+            }
+
+            if (list.userId !== req.user.id) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Acesso negado a esta lista'
+                });
+            }
+
+            if (list.items.length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Lista vazia - não é possível fazer checkout'
+                });
+            }
+
+            console.log(`📊 Publicando evento para lista com ${list.items.length} itens`);
+
+            // Publicar evento assíncrono
+            await this.publishCheckoutEvent(
+                list.id,
+                list.userId,
+                list.items,
+                list.summary.estimatedTotal
+            );
+
+            // Atualizar status da lista
+            await this.listsDb.update(id, {
+                status: 'completed',
+                completedAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            });
+
+            // Resposta imediata (202 Accepted)
+            res.status(202).json({
+                success: true,
+                message: 'Checkout iniciado - processamento em background',
+                data: {
+                    listId: list.id,
+                    status: 'processing',
+                    totalItems: list.items.length,
+                    totalAmount: list.summary.estimatedTotal,
+                    message: 'Evento publicado para processamento assíncrono'
+                }
+            });
+
+        } catch (error) {
+            console.error('❌ Erro no checkout:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Erro interno do servidor'
             });
         }
     }
@@ -199,7 +425,7 @@ class ListService {
         try {
             const { status } = req.query;
             const filter = { userId: req.user.id };
-            
+
             if (status) {
                 filter.status = status;
             }
@@ -377,7 +603,7 @@ class ListService {
 
             // Verificar se item já existe na lista
             const existingItemIndex = list.items.findIndex(item => item.itemId === itemId);
-            
+
             if (existingItemIndex >= 0) {
                 // Atualizar quantidade se item já existe
                 list.items[existingItemIndex].quantity += parseFloat(quantity);
@@ -601,18 +827,31 @@ class ListService {
             endpoints: ['/health', '/lists']
         });
     }
-    
+
     start() {
-        this.app.listen(this.port, () => {
+        this.app.listen(this.port, async () => {
             console.log('=====================================');
             console.log(`List Service iniciado na porta ${this.port}`);
             console.log(`URL: ${this.serviceUrl}`);
             console.log(`Health: ${this.serviceUrl}/health`);
             console.log('=====================================');
-            
+
+            // Conectar ao RabbitMQ
+            await this.connectRabbitMQ();
+
             this.registerWithRegistry();
             this.startHealthReporting();
         });
+    }
+
+    // Graceful shutdown
+    async close() {
+        if (this.channel) {
+            await this.channel.close();
+        }
+        if (this.connection) {
+            await this.connection.close();
+        }
     }
 }
 

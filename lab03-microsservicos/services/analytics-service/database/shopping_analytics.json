@@ -1,0 +1,36 @@
+[
+  {
+    "id": "0b3d06ff-eb82-47e6-a140-550c85a1583c",
+    "listId": "27361ac2-9365-442e-b304-083616c456bd",
+    "userId": "689e213b-9ba0-49bd-9a36-e2dbe7eaff59",
+    "totalAmount": 50.54,
+    "itemCount": 3,
+    "categoryBreakdown": {
+      "Outros": {
+        "count": 6,
+        "totalAmount": 50.540000000000006
+      }
+    },
+    "timestamp": "2025-11-23T00:40:01.959Z",
+    "processedAt": "2025-11-23T00:40:01.979Z",
+    "createdAt": "2025-11-23T00:40:01.992Z",
+    "updatedAt": "2025-11-23T00:40:01.992Z"
+  },
+  {
+    "id": "60e5eed4-174c-40d3-bca7-414803cae433",
+    "listId": "4b55c6a1-cb86-4800-a0c0-b1ac026007cb",
+    "userId": "689e213b-9ba0-49bd-9a36-e2dbe7eaff59",
+    "totalAmount": 50.54,
+    "itemCount": 3,
+    "categoryBreakdown": {
+      "Outros": {
+        "count": 6,
+        "totalAmount": 50.540000000000006
+      }
+    },
+    "timestamp": "2025-11-23T02:25:38.822Z",
+    "processedAt": "2025-11-23T02:25:38.831Z",
+    "createdAt": "2025-11-23T02:25:38.832Z",
+    "updatedAt": "2025-11-23T02:25:38.832Z"
+  }
+]
