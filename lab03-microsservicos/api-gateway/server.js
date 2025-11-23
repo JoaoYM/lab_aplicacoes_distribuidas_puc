@@ -25,9 +25,46 @@ class APIGateway {
         }, 3000);
     }
 
+    // setupMiddleware() {
+    //     this.app.use((req, res, next) => {
+    //         console.log('🎯 REQUISIÇÃO CHEGOU NO GATEWAY:', req.method, req.originalUrl);
+    //         next();
+    //     });
     setupMiddleware() {
+        // Middleware de debug detalhado - DEVE SER O PRIMEIRO
         this.app.use((req, res, next) => {
-            console.log('🎯 REQUISIÇÃO CHEGOU NO GATEWAY:', req.method, req.originalUrl);
+            const requestId = Date.now() + Math.random().toString(36).substr(2, 9);
+            req.requestId = requestId;
+
+            console.log('\n🎯 ========== NOVA REQUISIÇÃO GATEWAY ==========');
+            console.log(`🆔 Request ID: ${requestId}`);
+            console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
+            console.log(`🌐 Método: ${req.method}`);
+            console.log(`📍 URL Original: ${req.originalUrl}`);
+            console.log(`🔗 URL Completa: ${req.protocol}://${req.get('host')}${req.originalUrl}`);
+            console.log(`📋 Path: ${req.path}`);
+            console.log(`❓ Query Params:`, req.query);
+            console.log(`📦 Headers:`, {
+                host: req.headers.host,
+                'user-agent': req.headers['user-agent'],
+                'content-type': req.headers['content-type'],
+                authorization: req.headers.authorization ? '***PRESENT***' : 'MISSING',
+                'content-length': req.headers['content-length']
+            });
+            console.log(`📍 IP: ${req.ip}`);
+            console.log(`🔍 IPS: ${req.ips}`);
+            console.log(`🍪 Cookies: ${Object.keys(req.cookies || {}).length > 0 ? 'PRESENT' : 'NONE'}`);
+
+            // Log do body (com cuidado para não logar senhas)
+            if (req.body && Object.keys(req.body).length > 0) {
+                const safeBody = { ...req.body };
+                if (safeBody.password) safeBody.password = '***HIDDEN***';
+                if (safeBody.token) safeBody.token = '***HIDDEN***';
+                console.log(`📝 Body:`, JSON.stringify(safeBody, null, 2));
+            }
+
+            console.log('🎯 =============================================\n');
+
             next();
         });
 
@@ -168,7 +205,7 @@ class APIGateway {
         } else if (originalPath.startsWith('/api/search')) {
             return 'item-service';
         }
-        
+
         return null;
     }
 
@@ -264,7 +301,7 @@ class APIGateway {
 
         } catch (error) {
             const serviceName = this.extractServiceName(req.originalUrl);
-            
+
             // Registrar falha
             if (serviceName) {
                 this.recordFailure(serviceName);
