@@ -1,32 +1,56 @@
 {
   "name": "lista-compras-microservices",
   "version": "1.0.0",
-  "description": "Sistema de lista de compras com microsserviços",
+  "description": "Sistema de lista de compras com microsserviços e mensageria RabbitMQ",
   "main": "api-gateway/server.js",
   "scripts": {
     "start:gateway": "node api-gateway/server.js",
     "start:user": "node services/user-service/server.js",
     "start:item": "node services/item-service/server.js",
     "start:list": "node services/list-service/server.js",
+    "start:notification": "node services/notification-service/consumer.js",
+    "start:analytics": "node services/analytics-service/consumer.js",
     "start:all": "concurrently \"npm run start:user\" \"npm run start:item\" \"npm run start:list\" \"npm run start:gateway\"",
+    "start:consumers": "concurrently \"npm run start:notification\" \"npm run start:analytics\"",
+    "start:full": "concurrently \"npm run start:user\" \"npm run start:item\" \"npm run start:list\" \"npm run start:gateway\" \"npm run start:notification\" \"npm run start:analytics\"",
     
     "debug:gateway": "nodemon --inspect api-gateway/server.js",
     "debug:user": "nodemon --inspect services/user-service/server.js",
     "debug:item": "nodemon --inspect services/item-service/server.js",
     "debug:list": "nodemon --inspect services/list-service/server.js",
+    "debug:notification": "nodemon --inspect services/notification-service/consumer.js",
+    "debug:analytics": "nodemon --inspect services/analytics-service/consumer.js",
     "debug:all": "concurrently \"npm run debug:user\" \"npm run debug:item\" \"npm run debug:list\" \"npm run debug:gateway\"",
+    "debug:consumers": "concurrently \"npm run debug:notification\" \"npm run debug:analytics\"",
+    "debug:full": "concurrently \"npm run debug:user\" \"npm run debug:item\" \"npm run debug:list\" \"npm run debug:gateway\" \"npm run debug:notification\" \"npm run debug:analytics\"",
     
     "debug:ports:user": "nodemon --inspect=9229 services/user-service/server.js",
     "debug:ports:item": "nodemon --inspect=9230 services/item-service/server.js",
     "debug:ports:list": "nodemon --inspect=9231 services/list-service/server.js",
     "debug:ports:gateway": "nodemon --inspect=9232 api-gateway/server.js",
+    "debug:ports:notification": "nodemon --inspect=9233 services/notification-service/consumer.js",
+    "debug:ports:analytics": "nodemon --inspect=9234 services/analytics-service/consumer.js",
     "debug:ports:all": "concurrently \"npm run debug:ports:user\" \"npm run debug:ports:item\" \"npm run debug:ports:list\" \"npm run debug:ports:gateway\"",
+    "debug:ports:consumers": "concurrently \"npm run debug:ports:notification\" \"npm run debug:ports:analytics\"",
+    "debug:ports:full": "concurrently \"npm run debug:ports:user\" \"npm run debug:ports:item\" \"npm run debug:ports:list\" \"npm run debug:ports:gateway\" \"npm run debug:ports:notification\" \"npm run debug:ports:analytics\"",
     
     "start:demo": "node client-demo.js",
+    "demo:messaging": "node demo-messaging.js",
+    
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:restart": "docker compose restart",
+    "docker:rabbitmq": "docker compose up -d rabbitmq",
+    "docker:setup": "npm run docker:up && sleep 10 && npm run setup:rabbitmq",
+    "setup:rabbitmq": "node scripts/setup-rabbitmq.js",
+    "setup:messaging": "npm run docker:setup && sleep 5 && npm run start:full",
+    
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "axios": "^1.4.0",
+    "amqplib": "^0.10.3",
+    "axios": "^1.6.0",
     "bcryptjs": "^2.4.3",
     "concurrently": "^8.2.0",
     "cors": "^2.8.5",
@@ -46,7 +70,11 @@
     "shopping",
     "list",
     "api",
-    "nosql"
+    "nosql",
+    "rabbitmq",
+    "messaging",
+    "docker",
+    "event-driven"
   ],
   "author": "Seu Nome",
   "license": "MIT"
